@@ -149,7 +149,7 @@
 )])
       (display-results correct answers equal?)))
 
-(define (test-lambda
+(define (test-lambda)
     (let ([correct '(
 		     6
 		     12
