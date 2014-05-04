@@ -1,6 +1,9 @@
 ;:  Single-file version of the interpreter.
 ;; Easier to submit to server, probably harder to use in the development process
-
+(define rl 
+  (lambda ()
+    (load "all.ss")
+    (load "A15-test-code.ss")))
 (load "chez-init.ss") 
 
 
@@ -14,7 +17,9 @@
 
 
 ;; Parsed expression datatypes
-
+(define lit-exp?
+  (lambda (id) (or (number? id) (string? id) (list? id) (symbol? id)
+                         (boolean? id) (vector? id))))
 (define-datatype expression expression?
   [var-exp        ; variable references
    (id symbol?)]
@@ -24,9 +29,39 @@
       (ormap 
        (lambda (pred) (pred x))
        (list number? vector? boolean? symbol? string? pair? null?))))]
-  [app-exp        ; applications
-   (rator expression?)
-   (rands (list-of expression?))]  
+(lambda-exp
+    (id (list-of symbol?))
+    (list-of-bodies (list-of expression?)))
+  (lambda-varlist-exp
+    (id symbol?)
+    (list-of-bodies (list-of expression?)))
+  (let-exp
+    (list-of-app (list-of expression?))
+    (list-of-bodies (list-of expression?)))
+  (let-name-exp
+    (name expression?)
+    (list-of-app (list-of expression?))
+    (list-of-bodies (list-of expression?)))
+  (let*-exp
+    (list-of-app (list-of expression?))
+    (list-of-bodies (list-of expression?)))
+  (letrec-exp
+    (list-of-app (list-of expression?))
+    (list-of-bodies (list-of expression?)))
+
+  (app-exp
+    (rator expression?)
+    (rand (list-of expression?)))
+  (if-exp
+    (pred expression?)
+    (consequence1 expression?)
+    (consequence2 expression?))
+  (if-no-else-exp
+    (pred expression?)
+    (consequence expression?))
+  (set!-exp
+    (var symbol?)
+    (expr expression?))
   )
 
 	
