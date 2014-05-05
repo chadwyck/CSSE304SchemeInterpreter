@@ -4,7 +4,7 @@
   (lambda (form)
     ; later we may add things that are not expressions.
     (display form)
-    (eval-exp form (empty-env))))
+    (eval-exp form (init-env))))
 
 ; eval-exp is the main component of the interpreter
 
@@ -112,6 +112,40 @@
       [(car) (apply-and-check-args car args 1 =)]
       [(cdr) (apply-and-check-args cdr args 1 =)]
       [(list) (cons (1st args) (apply-prim-proc list (cdr args)))]
+      [(null?) (apply-and-check-args null? args 1 =)]
+      [(assq) (apply-and-check-args assq args 2 =)]
+      [(eq?) (apply-and-check-args eq? args 2 =)]
+      [(equal?) (apply-and-check-args equal? args 2 =)]
+      [(atom?) (apply-and-check-args atom? args 1 =)]
+      [(length) (apply-and-check-args length args 1 =)]
+      [(list->vector) (apply-and-check-args list->vector args 1 =)]
+      [(list?) (apply-and-check-args list? args 1 =)]
+      [(pair?) (apply-and-check-args pair? args 1 =)]
+      [(procedure?) (apply-and-check-args procedure? args 1 =)]
+      [(vector->list) (apply-and-check-args vector->list args 1 =)]
+      [(vector) (apply-and-check-args args 0 >=)]
+      [(make-vector) (apply-and-check-args make-vector args 1 =)]
+      [(vector-ref) (apply-and-check-args vector-ref args 2 =)]
+      [(vector?) (apply-and-check-args vector? args 1 =)]
+      [(number?) (apply-and-check-args number? args 1 =)]
+      [(symbol?) (apply-and-check-args symbol? args 1 =)]
+      [(set-car!) (apply-and-check-args set-car! args 2 =)]
+      [(set-cdr!) (apply-and-check-args set-cdr! args 2 =)]
+      [(vector-set!) (apply-and-check-args vector-set! args 3 =)]
+      [(caar) (apply-and-check-args caar args 1 =)]
+      [(cadr) (apply-and-check-args cadr args 1 =)]
+      [(cdar) (apply-and-check-args cdar args 1 =)]
+      [(cddr) (apply-and-check-args cddr args 1 =)]
+      [(caaar) (apply-and-check-args caaar args 1 =)]
+      [(caadr) (apply-and-check-args caadr args 1 =)]
+      [(cadar) (apply-and-check-args cadar args 1 =)]
+      [(caddr) (apply-and-check-args caddr args 1 =)]
+      [(cdaar) (apply-and-check-args cdaar args 1 =)]
+      [(cdadr) (apply-and-check-args cdadr args 1 =)]
+      [(cddar) (apply-and-check-args cddar args 1 =)]
+      [(cdddr) (apply-and-check-args cdddr args 1 =)]
+      [(newline) (newline)]
+      [(display) (apply display args)]
       [else (error 'apply-prim-proc 
             "Bad primitive procedure name: ~s" 
             prim-op)])))
