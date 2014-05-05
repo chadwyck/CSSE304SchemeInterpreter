@@ -45,6 +45,9 @@
         (if (eval-exp test-exp env)
             (eval-exp then-exp env)
             (eval-exp else-exp env))]
+      [if-no-else-exp (test-exp then-exp)
+        (if (eval-exp test-exp env)
+            (eval-exp then-exp env))]
       [lambda-exp (args body)
         (closure args body env)]
       [else (eopl:error 'eval-exp "Bad abstract syntax: ~a" exp)])))
