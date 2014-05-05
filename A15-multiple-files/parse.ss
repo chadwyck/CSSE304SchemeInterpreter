@@ -11,6 +11,7 @@
   (lambda (datum)
     (cond
       [(symbol? datum) (var-exp datum)]
+      [(lit-exp? datum) (lit-exp datum)]
       [(list? datum)
         (cond [(eqv? (car datum) 'lambda)
                 (cond [(null? (cddr datum))
@@ -114,7 +115,6 @@
               ;[(lit-exp? datum) (lit-exp datum)]
               [else
                 (app-exp (parse-exp (car datum)) (map parse-exp (cdr datum)))])]
-      [(lit-exp? datum) (lit-exp datum)]
       [else (eopl:error 'parse-exp
               "Invalid concrete syntax ~s" datum)])))
 

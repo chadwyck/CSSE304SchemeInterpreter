@@ -1,8 +1,10 @@
 
 ;; Parsed expression datatypes
 (define lit-exp?
-  (lambda (id) (or (number? id) (string? id) (list? id) (symbol? id)
-                         (boolean? id) (vector? id))))
+  (lambda (x)
+      (ormap 
+       (lambda (pred) (pred x))
+       (list number? vector? boolean? symbol? string? pair? null?))))
 (define-datatype expression expression?
   [var-exp        ; variable references
    (id symbol?)]
