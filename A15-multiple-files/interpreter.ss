@@ -3,7 +3,7 @@
 (define top-level-eval
   (lambda (form)
     ; later we may add things that are not expressions.
-    ; (display form)
+    (display form)
     (eval-exp form (empty-env))))
 
 ; eval-exp is the main component of the interpreter
@@ -71,7 +71,11 @@
                    "Attempt to apply bad procedure: ~s" 
                     proc-value)])))
 
-(define *prim-proc-names* '(+ - * add1 sub1 cons =))
+(define *prim-proc-names* '(+ - * add1 sub1 cons = / zero? not < 
+        car cdr list null? assq eq? equal? atom? length list-vector list? 
+        pair? procedure? vector->list vector make-vector vector-ref vector? number? 
+        symbol? set-car! set-cdr! vector-set! display newline caar cadr cdar 
+        cddr caaar caadr cadar caddr cdaar cdadr cddar cdddr))
 
 (define init-env         ; for now, our initial global environment only contains 
   (extend-env            ; procedure names.  Recall that an environment associates
@@ -86,16 +90,46 @@
 (define apply-prim-proc
   (lambda (prim-proc args)
     (case prim-proc
-      [(+) (+ (1st args) (2nd args))]
-      [(-) (- (1st args) (2nd args))]
-      [(*) (* (1st args) (2nd args))]
-      [(add1) (+ (1st args) 1)]
-      [(sub1) (- (1st args) 1)]
-      [(cons) (cons (1st args) (2nd args))]
-      [(=) (= (1st args) (2nd args))]
+      [(+) (apply-and-check-args + args 0 >=)]
+      [(-) (apply-and-check-args - args 1 >=)]
+      [(*) (apply-and-check-args * args 0 >=)]
+      [(add1) (if (= (length args) 1) 
+                (+ (1st args) 1) 
+                (error 'apply-prim-proc 
+                  "Wrong number of arguments to add1, Received: ~s" 
+                  (length args)))]
+      [(sub1) (if (= (length args) 1) 
+                (- (1st args) 1) 
+                (error 'apply-prim-proc 
+                  "Wrong number of arguments to sub1, Received: ~s" 
+                  (length args)))]
+      [(cons) (apply-and-check-args cons args 2 =)]
+      [(=) (apply-and-check-args = args 1 >=)]
+      [(/) (apply-and-check-args / args 1 >=)]
+      [(zero?) (apply-and-check-args zero? args 1 =)]
+      [(not) (apply-and-check-args not args 1 =)]
+      [(<) (apply-and-check-args < args 1 >=)]
+      [(car) (apply-and-check-args car args 1 =)]
+      [(cdr) (apply-and-check-args cdr args 1 =)]
+      [(list) (cons (1st args) (apply-prim-proc list (cdr args)))]
       [else (error 'apply-prim-proc 
             "Bad primitive procedure name: ~s" 
             prim-op)])))
+
+;Checks argument count 
+(define check-arg-count 
+  (lambda (args num check) 
+    (check (length args) num)))
+
+;First checks the argument number then applies given procedure
+; to the argument list if it is right number of arguments.
+(define apply-and-check-args 
+  (lambda (proc args num check) 
+    (if (check-arg-count args num check) 
+      (apply proc args) 
+      (error 'apply-built-in-proc 
+        "Wrong number of arguments for proc: ~s Needs ~s ~s Received ~s"
+         proc check num (length args)))))
 
 (define rep      ; "read-eval-print" loop.
   (lambda ()
