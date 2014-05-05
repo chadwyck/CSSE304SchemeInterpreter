@@ -4,7 +4,13 @@
   (lambda (x)
       (ormap 
        (lambda (pred) (pred x))
-       (list number? vector? boolean? symbol? string? pair? null?))))
+       (list number? vector? boolean? symbol? string? 
+          (lambda (x)
+            (if (pair? x)
+              (if (equal? (car x) 'quote)
+                #t #f)
+              #f))
+          null?))))
 (define-datatype expression expression?
   [var-exp        ; variable references
    (id symbol?)]
