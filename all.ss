@@ -342,12 +342,15 @@
 (define top-level-eval
   (lambda (form)
     ; later we may add things that are not expressions.
-    (eval-exp form)))
+    (display 'poopie)
+    (display form)
+    (eval-exp form '5)))
 
 ; eval-exp is the main component of the interpreter
 
 (define eval-exp
   (lambda (exp env)
+    (display (list 'eval-exp exp env))
     (cases expression exp
       [lit-exp (datum) datum]
       [var-exp (id)

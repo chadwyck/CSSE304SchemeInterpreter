@@ -3,24 +3,49 @@
 (define top-level-eval
   (lambda (form)
     ; later we may add things that are not expressions.
-    (eval-exp form)))
+    (eval-exp form #f)))
 
 ; eval-exp is the main component of the interpreter
 
 (define eval-exp
-  (lambda (exp)
+  (lambda (exp env)
     (cases expression exp
       [lit-exp (datum) datum]
       [var-exp (id)
-				(apply-env init-env id; look up its value.
-      	   (lambda (x) x) ; procedure to call if id is in the environment 
-           (lambda () (eopl:error 'apply-env ; procedure to call if id not in env
-		          "variable not found in environment: ~s"
-			   id)))] 
+        (apply-env env id; look up its value.
+          (lambda (x) x) ; procedure to call if id is in the environment 
+          (lambda ()
+            (apply-env init-env id ; Eventually we want to change init-env to global-env to have a better name
+              (lambda (x) x)
+              (eopl:error 'apply-env ; procedure to call if id not in env
+                "variable not found in environment: ~s"
+                  id))
+           ))] 
       [app-exp (rator rands)
         (let ([proc-value (eval-exp rator)]
               [args (eval-rands rands)])
           (apply-proc proc-value args))]
+      [let-exp (ids exprs bodies)
+        (let ([new-env
+                (extend-env ids
+                            (map (lambda (x) (eval-exp x env))
+                              exprs)
+                            env)])
+          (let loop ([bodies bodies])
+            (if (null? (cdr bodies))
+                (eval-exp (car bodies) new-env)
+                (begin (eval-exp (car bodies) new-env)
+                       (loop (cdr bodies))))))]
+      [letrec-exp (proc-names idss bodies letrec-body)
+        (eval-exp letrec-body
+          (extend-env-recursively
+            proc-names idss bodies env))]
+      [if-exp (test-exp then-exp else-exp)
+        (if (eval-exp test-exp env)
+            (eval-exp then-exp env)
+            (eval-exp else-exp env))]
+      [lambda-exp (args body)
+        (closure args body env)]
       [else (eopl:error 'eval-exp "Bad abstract syntax: ~a" exp)])))
 
 ; evaluate the list of operands, putting results into a list

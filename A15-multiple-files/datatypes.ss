@@ -21,6 +21,7 @@
     (id symbol?)
     (list-of-bodies (list-of expression?))]
   [let-exp
+    (list-of-ids (list-of expression?))
     (list-of-app (list-of expression?))
     (list-of-bodies (list-of expression?))]
   [let-name-exp
@@ -31,6 +32,8 @@
     (list-of-app (list-of expression?))
     (list-of-bodies (list-of expression?))]
   [letrec-exp
+    (list-of-proc-names (list-of symbol?))  ;; DERP : might not be symbol
+    (list-of-ids (list-of expression?))
     (list-of-app (list-of expression?))
     (list-of-bodies (list-of expression?))]
   [app-exp
