@@ -27,7 +27,7 @@
     (id symbol?)
     (list-of-bodies (list-of expression?))]
   [let-exp
-    (list-of-ids (list-of expression?))
+    (list-of-ids (list-of symbol?))
     (list-of-app (list-of expression?))
     (list-of-bodies (list-of expression?))]
   [let-name-exp
@@ -38,7 +38,7 @@
     (list-of-app (list-of expression?))
     (list-of-bodies (list-of expression?))]
   [letrec-exp
-    (list-of-proc-names (list-of symbol?))  ;; DERP : might not be symbol
+    (list-of-proc-names (list-of expression?))
     (list-of-ids (list-of expression?))
     (list-of-app (list-of expression?))
     (list-of-bodies (list-of expression?))]
@@ -77,8 +77,9 @@
 
 (define-datatype proc-val proc-val?
   [prim-proc
-   (name symbol?)])
-	 
-	 
-	 
+   (name symbol?)]
+  [closure
+    (args (list-of symbol?))
+    (body (list-of expression?))
+    (env environment?)])
 	

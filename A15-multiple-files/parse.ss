@@ -21,10 +21,10 @@
                         (eopl:error 'parse-exp
                           "lambda's formal arguments ~s must all be symbols" (cadr datum))]
                       [((list-of symbol?) (cadr datum))
-                       (trace-lambda 21-exp (cadr datum)
+                       (lambda-exp (cadr datum)
                         (map parse-exp (cddr datum)))]
                       [else
-                        (trace-lambda 22-varlist-exp (cadr datum)
+                        (lambda-varlist-exp (cadr datum)
                           (map parse-exp (cddr datum)))])]
               [(eqv? (car datum) 'let)
                 (cond [(symbol? (cadr datum))
@@ -56,7 +56,7 @@
                                 (eopl:error 'parse-exp
                                   "first members must be symbols: ~s" (cadr datum))]
                               [else
-                                (let-exp (map parse-exp (cadr datum)) (map parse-exp (cddr datum)))])]
+                                (let-exp (car (apply map list (cadr datum))) (map parse-exp (cadr (apply map list (cadr datum)))) (map parse-exp (cddr datum)))])]
                       [else
                         (eopl:error 'parse-exp
                           "declarations in ~s-expression not a list ~s" (car datum) datum)])]

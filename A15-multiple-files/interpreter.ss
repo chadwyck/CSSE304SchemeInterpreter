@@ -67,6 +67,9 @@
     (cases proc-val proc-value
       [prim-proc (op) (apply-prim-proc op args)]
 			; You will add other cases
+      [closure (ids body env)
+        (let ([new-env (extend-env ids args env)])  ; DERP: It's not working. 
+          ())]
       [else (error 'apply-proc
                    "Attempt to apply bad procedure: ~s" 
                     proc-value)])))
