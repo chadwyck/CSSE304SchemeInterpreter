@@ -57,17 +57,6 @@
     (expr expression?)]
 )
 
-	
-; datatype for procedures.  At first there is only one
-; kind of procedure, but more kinds will be added later.
-
-(define-datatype proc-val proc-val?
-  [prim-proc
-   (name symbol?)])
-	 
-	 
-	 
-	
 ;; environment type definitions
 
 (define scheme-value?
@@ -79,3 +68,14 @@
    (syms (list-of symbol?))
    (vals (list-of scheme-value?))
    (env environment?)))
+	
+; datatype for procedures.  At first there is only one
+; kind of procedure, but more kinds will be added later.
+
+(define-datatype proc-val proc-val?
+  [prim-proc
+   (name symbol?)])
+	 
+	 
+	 
+	
