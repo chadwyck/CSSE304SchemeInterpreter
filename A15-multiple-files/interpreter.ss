@@ -71,7 +71,7 @@
                    "Attempt to apply bad procedure: ~s" 
                     proc-value)])))
 
-(define *prim-proc-names* '(+ - * add1 sub1 cons = / zero? not < 
+(define *prim-proc-names* '(+ - * add1 sub1 cons = / zero? not < <= > >=
         car cdr list null? assq eq? equal? atom? length list-vector list? 
         pair? procedure? vector->list vector make-vector vector-ref vector? number? 
         symbol? set-car! set-cdr! vector-set! display newline caar cadr cdar 
@@ -109,6 +109,9 @@
       [(zero?) (apply-and-check-args zero? args 1 =)]
       [(not) (apply-and-check-args not args 1 =)]
       [(<) (apply-and-check-args < args 1 >=)]
+      [(<=) (apply-and-check-args <= args 1 >=)]
+      [(>) (apply-and-check-args > args 1 >=)]
+      [(>=) (apply-and-check-args >= args 1 >=)]
       [(car) (apply-and-check-args car args 1 =)]
       [(cdr) (apply-and-check-args cdr args 1 =)]
       [(list) (cons (1st args) (apply-prim-proc list (cdr args)))]
@@ -148,7 +151,7 @@
       [(display) (apply display args)]
       [else (error 'apply-prim-proc 
             "Bad primitive procedure name: ~s" 
-            prim-op)])))
+            prim-proc)])))
 
 ;Checks argument count 
 (define check-arg-count 
