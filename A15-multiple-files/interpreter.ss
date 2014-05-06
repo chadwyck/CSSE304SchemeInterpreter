@@ -3,8 +3,8 @@
 (define top-level-eval
   (lambda (form)
     ; later we may add things that are not expressions.
-    (display form)
-    (eval-exp form (init-env))))
+    ;(display form)
+    (eval-exp form (empty-env))))
 
 ; eval-exp is the main component of the interpreter
 
