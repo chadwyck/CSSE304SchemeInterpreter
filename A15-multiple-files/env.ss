@@ -13,7 +13,7 @@
     (list-index (trace-lambda 34 (xsym) (eqv? sym xsym)) los)))
 
 (define list-index
-  (trace-lambda 35 (pred ls)
+  (lambda (pred ls)
     (cond
      ((null? ls) #f)
      ((pred (car ls)) 0)
