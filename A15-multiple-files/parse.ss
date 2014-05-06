@@ -8,7 +8,7 @@
 (define 3rd caddr)
 
 (define parse-exp
-  (lambda (datum)
+  (trace-lambda 20 (datum)
     (cond
       [(symbol? datum) (var-exp datum)]
       [(lit-exp? datum) (lit-exp (if (pair? datum) (if (equal? (car datum) 'quote) (cadr datum) datum) datum))]
@@ -21,10 +21,10 @@
                         (eopl:error 'parse-exp
                           "lambda's formal arguments ~s must all be symbols" (cadr datum))]
                       [((list-of symbol?) (cadr datum))
-                       (lambda-exp (cadr datum)
+                       (trace-lambda 21-exp (cadr datum)
                         (map parse-exp (cddr datum)))]
                       [else
-                        (lambda-varlist-exp (cadr datum)
+                        (trace-lambda 22-varlist-exp (cadr datum)
                           (map parse-exp (cddr datum)))])]
               [(eqv? (car datum) 'let)
                 (cond [(symbol? (cadr datum))
@@ -34,10 +34,10 @@
                               [(not ((list-of list?) (caddr datum)))
                                 (eopl:error 'parse-exp
                                   "declarations in ~s-expression not a list ~s" (car datum) datum)]
-                              [(not (andmap (lambda (x) (equal? 2 (length x))) (caddr datum)))
+                              [(not (andmap (trace-lambda 23 (x) (equal? 2 (length x))) (caddr datum)))
                                 (eopl:error 'parse-exp
                                   "declaration in ~s-exp must be a list of length 2 ~s" (car datum) datum)]
-                              [(not (andmap (lambda (x) (symbol? (car x))) (caddr datum)))
+                              [(not (andmap (trace-lambda 24 (x) (symbol? (car x))) (caddr datum)))
                                 (eopl:error 'parse-exp
                                   "first members must be symbols: ~s" (caddr datum))]
                               [else
@@ -49,10 +49,10 @@
                               [(not ((list-of list?) (cadr datum)))
                                 (eopl:error 'parse-exp
                                   "declarations in ~s-expression not a list ~s" (car datum) datum)]
-                              [(not (andmap (lambda (x) (equal? 2 (length x))) (cadr datum)))
+                              [(not (andmap (trace-lambda 25 (x) (equal? 2 (length x))) (cadr datum)))
                                 (eopl:error 'parse-exp
                                   "declaration in ~s-exp must be a list of length 2 ~s" (car datum) datum)]
-                              [(not (andmap (lambda (x) (symbol? (car x))) (cadr datum)))
+                              [(not (andmap (trace-lambda 26 (x) (symbol? (car x))) (cadr datum)))
                                 (eopl:error 'parse-exp
                                   "first members must be symbols: ~s" (cadr datum))]
                               [else
@@ -68,10 +68,10 @@
                               [(not ((list-of list?) (cadr datum)))
                                 (eopl:error 'parse-exp
                                   "declarations in ~s-expression not a list ~s" (car datum) datum)]
-                              [(not (andmap (lambda (x) (equal? 2 (length x))) (cadr datum)))
+                              [(not (andmap (trace-lambda 27 (x) (equal? 2 (length x))) (cadr datum)))
                                 (eopl:error 'parse-exp
                                   "declaration in ~s-exp must be a list of length 2 ~s" (car datum) datum)]
-                              [(not (andmap (lambda (x) (symbol? (car x))) (cadr datum)))
+                              [(not (andmap (trace-lambda 28 (x) (symbol? (car x))) (cadr datum)))
                                 (eopl:error 'parse-exp
                                   "first members must be symbols: ~s" (cadr datum))]
                               [else
@@ -87,10 +87,10 @@
                               [(not ((list-of list?) (cadr datum)))
                                 (eopl:error 'parse-exp
                                   "declarations in ~s-expression not a list ~s" (car datum) datum)]
-                              [(not (andmap (lambda (x) (equal? 2 (length x))) (cadr datum)))
+                              [(not (andmap (trace-lambda 29 (x) (equal? 2 (length x))) (cadr datum)))
                                 (eopl:error 'parse-exp
                                   "declaration in ~s-exp must be a list of length 2 ~s" (car datum) datum)]
-                              [(not (andmap (lambda (x) (symbol? (car x))) (cadr datum)))
+                              [(not (andmap (trace-lambda 30 (x) (symbol? (car x))) (cadr datum)))
                                 (eopl:error 'parse-exp
                                   "first members must be symbols: ~s" (cadr datum))]
                               [else

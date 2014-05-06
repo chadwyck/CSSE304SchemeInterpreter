@@ -1,35 +1,35 @@
 ; top-level-eval evaluates a form in the global environment
 
 (define top-level-eval
-  (lambda (form)
+  (trace-lambda 6 (form)
     ; later we may add things that are not expressions.
     ;(display form)
-    (eval-exp form (empty-env))))
+    (eval-exp form init-env)))
 
 ; eval-exp is the main component of the interpreter
 
 (define eval-exp
-  (lambda (exp env)
+  (trace-lambda 7 (exp env)
     (cases expression exp
       [lit-exp (datum) datum]
       [var-exp (id)
         (apply-env env id; look up its value.
-          (lambda (x) x) ; procedure to call if id is in the environment 
-          (lambda ()
+          (trace-lambda 8 (x) x) ; procedure to call if id is in the environment 
+          (trace-lambda 9 ()
             (apply-env init-env id ; Eventually we want to change init-env to global-env to have a better name
-              (lambda (x) x)
+              (trace-lambda 10 (x) x)
               (eopl:error 'apply-env ; procedure to call if id not in env
                 "variable not found in environment: ~s"
                   id))
            ))] 
       [app-exp (rator rands)
-        (let ([proc-value (eval-exp rator)]
-              [args (eval-rands rands)])
+        (let ([proc-value (eval-exp rator env)]
+              [args (eval-rands rands env)])
           (apply-proc proc-value args))]
       [let-exp (ids exprs bodies)
         (let ([new-env
                 (extend-env ids
-                            (map (lambda (x) (eval-exp x env))
+                            (map (trace-lambda 11 (x) (eval-exp x env))
                               exprs)
                             env)])
           (let loop ([bodies bodies])
@@ -55,15 +55,15 @@
 ; evaluate the list of operands, putting results into a list
 
 (define eval-rands
-  (lambda (rands)
-    (map eval-exp rands)))
+  (trace-lambda 12 (rands env)
+    (map (trace-lambda 13 (x) (eval-exp x env)) rands)))
 
 ;  Apply a procedure to its arguments.
 ;  At this point, we only have primitive procedures.  
 ;  User-defined procedures will be added later.
 
 (define apply-proc
-  (lambda (proc-value args)
+  (trace-lambda 14 (proc-value args)
     (cases proc-val proc-value
       [prim-proc (op) (apply-prim-proc op args)]
 			; You will add other cases
@@ -88,7 +88,7 @@
 ; built-in procedure individually.  We are "cheating" a little bit.
 
 (define apply-prim-proc
-  (lambda (prim-proc args)
+  (trace-lambda 15 (prim-proc args)
     (case prim-proc
       [(+) (apply-and-check-args + args 0 >=)]
       [(-) (apply-and-check-args - args 1 >=)]
@@ -152,13 +152,13 @@
 
 ;Checks argument count 
 (define check-arg-count 
-  (lambda (args num check) 
+  (trace-lambda 16 (args num check) 
     (check (length args) num)))
 
 ;First checks the argument number then applies given procedure
 ; to the argument list if it is right number of arguments.
 (define apply-and-check-args 
-  (lambda (proc args num check) 
+  (trace-lambda 17 (proc args num check) 
     (if (check-arg-count args num check) 
       (apply proc args) 
       (error 'apply-built-in-proc 
@@ -166,7 +166,7 @@
          proc check num (length args)))))
 
 (define rep      ; "read-eval-print" loop.
-  (lambda ()
+  (trace-lambda 18 ()
     (display "--> ")
     ;; notice that we don't save changes to the environment...
     (let ([answer (top-level-eval (parse-exp (read)))])
@@ -175,7 +175,7 @@
       (rep))))  ; tail-recursive, so stack doesn't grow.
 
 (define eval-one-exp
-  (lambda (x) (top-level-eval (parse-exp x))))
+  (trace-lambda 19 (x) (top-level-eval (parse-exp x))))
 
 
 

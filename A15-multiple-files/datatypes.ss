@@ -1,11 +1,11 @@
 
 ;; Parsed expression datatypes
 (define lit-exp?
-  (lambda (x)
+  (trace-lambda 0 (x)
       (ormap 
-       (lambda (pred) (pred x))
+       (trace-lambda 1 (pred) (pred x))
        (list number? vector? boolean? symbol? string? 
-          (lambda (x)
+          (trace-lambda 2 (x)
             (if (pair? x)
               (if (equal? (car x) 'quote)
                 #t #f)
@@ -16,9 +16,9 @@
    (id symbol?)]
   [lit-exp        ; "Normal" data.  Did I leave out any types?
    (datum
-    (lambda (x)
+    (trace-lambda 3 (x)
       (ormap 
-       (lambda (pred) (pred x))
+       (trace-lambda 4 (pred) (pred x))
        (list number? vector? boolean? symbol? string? pair? null?))))]
   [lambda-exp
       (id (list-of symbol?))
@@ -60,7 +60,7 @@
 ;; environment type definitions
 
 (define scheme-value?
-  (lambda (x) #t))
+  (trace-lambda 5 (x) #t))
 
 (define-datatype environment environment?
   (empty-env-record)
