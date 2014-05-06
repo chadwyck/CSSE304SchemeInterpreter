@@ -73,7 +73,7 @@
 
 (define *prim-proc-names* '(+ - * add1 sub1 cons = / zero? not < <= > >=
         car cdr list null? assq eq? equal? atom? length list-vector list? 
-        pair? procedure? vector->list vector make-vector vector-ref vector? number? 
+        pair? procedure? vector->list list->vector vector make-vector vector-ref vector? number? 
         symbol? set-car! set-cdr! vector-set! display newline caar cadr cdar 
         cddr caaar caadr cadar caddr cdaar cdadr cddar cdddr))
 
@@ -114,7 +114,7 @@
       [(>=) (apply-and-check-args >= args 1 >=)]
       [(car) (apply-and-check-args car args 1 =)]
       [(cdr) (apply-and-check-args cdr args 1 =)]
-      [(list) (cons (1st args) (apply-and-check-args list (cdr args) 0 >=))]  ; DERP: This might be illegal? Not sure.
+      [(list) args]
       [(null?) (apply-and-check-args null? args 1 =)]
       [(assq) (apply-and-check-args assq args 2 =)]
       [(eq?) (apply-and-check-args eq? args 2 =)]
