@@ -69,7 +69,12 @@
 			; You will add other cases
       [closure (ids body env)
         (let ([new-env (extend-env ids args env)])  ; DERP: It's not working. 
-          ())]
+          (let looping ((body body)) 
+            (if (null? (cdr body))
+              (eval-exp (car body) new-env) 
+              (begin 
+                (eval-exp (car body) new-env) 
+                (looping (cdr body))))))]
       [else (error 'apply-proc
                    "Attempt to apply bad procedure: ~s" 
                     proc-value)])))
