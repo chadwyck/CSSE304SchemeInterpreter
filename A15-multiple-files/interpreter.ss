@@ -114,7 +114,7 @@
       [(>=) (apply-and-check-args >= args 1 >=)]
       [(car) (apply-and-check-args car args 1 =)]
       [(cdr) (apply-and-check-args cdr args 1 =)]
-      [(list) (cons (1st args) (apply-and-check-args list (cdr args) 0 >=))]  ; This might be illegal? Not sure.
+      [(list) (cons (1st args) (apply-and-check-args list (cdr args) 0 >=))]  ; DERP: This might be illegal? Not sure.
       [(null?) (apply-and-check-args null? args 1 =)]
       [(assq) (apply-and-check-args assq args 2 =)]
       [(eq?) (apply-and-check-args eq? args 2 =)]
