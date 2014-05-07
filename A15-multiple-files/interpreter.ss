@@ -134,7 +134,7 @@
       [(pair?) (apply-and-check-args pair? args 1 =)]
       [(procedure?) (apply-and-check-args proc-val? args 1 =)]
       [(vector->list) (apply-and-check-args vector->list args 1 =)]
-      [(vector) (apply-and-check-args args 0 >=)]
+      [(vector) (apply-and-check-args vector args 0 >=)]
       [(make-vector) (apply-and-check-args make-vector args 1 =)]
       [(vector-ref) (apply-and-check-args vector-ref args 2 =)]
       [(vector?) (apply-and-check-args vector? args 1 =)]
