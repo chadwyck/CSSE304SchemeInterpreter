@@ -10,7 +10,7 @@
 
 (define list-find-position
   (trace-lambda 33 (sym los)
-    (list-index (trace-lambda 34 (xsym) (eqv? sym xsym)) los)))
+    (list-index (lambda (xsym) (eqv? sym xsym)) los)))
 
 (define list-index
   (lambda (pred ls)

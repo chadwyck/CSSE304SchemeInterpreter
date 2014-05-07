@@ -112,6 +112,21 @@
                           "set! expression: ~s is wrong length" datum)]
                       [else
                         (set!-exp (cadr datum) (parse-exp (caddr datum)))])]
+              [(eqv? (car datum) 'cond)
+                (let ((conds (map car (cdr datum))) (bodies (map cdr (cdr datum))))
+                  (cond-exp (map parse-exp conds) (map (lambda (x) (begin-exp (map parse-exp x))) bodies)))]
+              [(eqv? (car datum) 'and)
+                (and-exp (map parse-exp (cdr datum)))]
+              [(eqv? (car datum) 'or)
+                (or-exp (map parse-exp (cdr datum)))]
+              [(eqv? (car datum) 'case)
+                (let ((test (cadr datum)) (keys (map car (cddr datum))) (bodies (map cdr (cddr datum))))
+                  (case-exp
+                    (parse-exp test)
+                    (map (lambda (x) (if (list? x) (map parse-exp x) (list (parse-exp x)))) keys)
+                    (map (lambda (x) (begin-exp (map parse-exp x))) bodies)))]
+              [(eqv? (car datum) 'while)
+                (while-exp (parse-exp (cadr datum)) (map parse-exp (cddr datum)))]
               ;[(lit-exp? datum) (lit-exp datum)]
               [else
                 (app-exp (parse-exp (car datum)) (map parse-exp (cdr datum)))])]

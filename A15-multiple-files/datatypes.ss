@@ -23,18 +23,20 @@
   [lambda-exp
       (id (list-of symbol?))
       (list-of-bodies (list-of expression?))]
-  [lambda-varlist-exp
-    (id symbol?)
-    (list-of-bodies (list-of expression?))]
+  ;[lambda-varlist-exp
+  ;  (id symbol?)
+  ;  (list-of-bodies (list-of expression?))]
   [let-exp
     (list-of-ids (list-of symbol?))
     (list-of-app (list-of expression?))
     (list-of-bodies (list-of expression?))]
   [let-name-exp
     (name expression?)
+    (list-of-ids (list-of symbol?))
     (list-of-app (list-of expression?))
     (list-of-bodies (list-of expression?))]
   [let*-exp
+    (list-of-ids (list-of symbol?))
     (list-of-app (list-of expression?))
     (list-of-bodies (list-of expression?))]
   [letrec-exp
@@ -55,6 +57,22 @@
   [set!-exp
     (var symbol?)
     (expr expression?)]
+  [cond-exp 
+    (conditions (list-of expression?)) 
+    (bodies (list-of expression?))]
+  [and-exp 
+    (conditions (list-of expression?))]
+  [or-exp 
+    (conditions (list-of expression?))]
+  [case-exp 
+    (test-exp expression?) 
+    (keys (list-of (lambda (x) (or (list-of expression? x) (equal? 'else (cadr x)))))) 
+    (bodies (list-of expression?))]
+  [while-exp
+    (test expression?)
+    (bodies (list-of expression?))]
+  [begin-exp
+    (bodies (list-of expression?))]
 )
 
 ;; environment type definitions

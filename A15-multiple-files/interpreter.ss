@@ -6,6 +6,80 @@
     ;(display form)
     (eval-exp form init-env)))
 
+
+
+
+(define syntax-expand (trace-lambda 999 (exp)
+  (cases expression exp
+    [var-exp (id) exp]
+    [lit-exp (val) exp]
+    [if-exp (test-exp true-exp false-exp)
+      (if-exp (syntax-expand test-exp) (syntax-expand true-exp) (syntax-expand false-exp))]
+    [if-no-else-exp (test-exp true-exp)
+      (if-no-else-exp (syntax-expand test-exp) (syntax-expand true-exp))]
+    [lambda-exp (id body)
+        (lambda-exp id (map syntax-expand body))]
+    [while-exp (test bodies)
+      (while-exp (syntax-expand test) (map syntax-expand bodies))]
+    [begin-exp (body)
+      (if (equal? 'define-exp (caar body))
+        (begin-exp (list (letrec-exp (list (cadar body)) (list (caddar body)) (list (syntax-expand (app-exp (lambda-exp '() (cdr body)) '()))))))
+        (begin-exp (map syntax-expand body)))]
+    [app-exp (rator rand)
+      (app-exp (syntax-expand rator) (map syntax-expand rand))]
+    [let-exp (ids rands body)
+        (app-exp (syntax-expand (lambda-exp ids body)) (map syntax-expand rands))]
+    [let-name-exp (name ids rands body)
+        (app-exp (letrec-exp (list name) (list (lambda-exp ids (map syntax-expand body))) (list (var-exp name))) rands)]
+    [let*-exp (ids rands body)
+        (if (null? ids)
+          (app-exp (lambda-exp '() (map syntax-expand body)) '())
+          (app-exp (lambda-exp (list (car ids)) (list (syntax-expand (let*-exp (cdr ids) (cdr rands) body)))) (list (car rands))))]
+    [cond-exp (conds bodies)
+      (let ((body (if (equal? (begin-exp '()) (car bodies)) (lit-exp '#t) (car bodies))))
+        (cond
+          [(= (length conds) 1)
+            (if-no-else-exp (syntax-expand (car conds)) (syntax-expand body))]
+          [(and (= (length conds) 2) (equal? (cadadr conds) 'else))
+            (if-exp (syntax-expand (car conds)) (syntax-expand body) (syntax-expand (cadr bodies)))]
+          [else
+            (if-exp (syntax-expand (car conds)) (syntax-expand body)
+              (syntax-expand (cond-exp (cdr conds) (cdr bodies))))]))]
+    [set!-exp (id val)
+      (set!-exp id (syntax-expand val))]
+    [letrec-exp (names ids rands body)
+      (letrec-exp ids (map syntax-expand rands) (map syntax-expand body))]
+    [and-exp (conds)
+      (if (null? conds)
+        (lit-exp '#t)
+        (if (= (length conds) 1)
+          (if-exp (syntax-expand (car conds)) (car conds) (lit-exp '#f))
+          (if-exp (syntax-expand (car conds)) (syntax-expand (and-exp (cdr conds))) (lit-exp '#f))))]
+    [or-exp (conds)
+      (if (null? conds)
+        (lit-exp '#f)
+        (if (= (length conds) 1)
+          (if-exp (syntax-expand (car conds)) (car conds) (lit-exp '#f))
+          (if-exp (syntax-expand (car conds)) (car conds) (syntax-expand (or-exp (cdr conds))))))]
+    [case-exp (test keys bodies)
+      (let ((tester ((lambda (test)
+            (lambda (key)
+              (app-exp (var-exp 'eqv?) (list (syntax-expand test) (syntax-expand key)))
+            )
+          ) test)))
+        (let ((test-exp (syntax-expand (or-exp (map tester (car keys))))))
+          (cond
+            [(= (length keys) 1)
+              (if-no-else-exp test-exp (syntax-expand (car bodies)))]
+            [(and (= (length keys) 2) (equal? (cadadr keys) 'else))
+              (if-exp test-exp (syntax-expand (car bodies)) (syntax-expand (cadr bodies)))]
+            [else
+              (if-exp test-exp (syntax-expand (car bodies))
+                (syntax-expand (case-exp test (cdr keys) (cdr bodies))))])))])))
+
+
+
+
 ; eval-exp is the main component of the interpreter
 
 (define eval-exp
@@ -50,7 +124,24 @@
             (eval-exp then-exp env))]
       [lambda-exp (args body)
         (closure args body env)]
+      [begin-exp (bodies)
+        (if (not (null? bodies))
+          (if (null? (cdr bodies))
+            (eval-exp (car bodies) env)
+            (begin (eval-exp (car bodies) env)
+              (eval-exp (begin-exp (cdr bodies)) env))))]
+      [while-exp (test bodies)
+        (if (eval-exp test env)
+          (begin 
+            (map eval-exp bodies (list-of-items env (length bodies)))
+            (eval-exp (while-exp test bodies) env)))]
       [else (eopl:error 'eval-exp "Bad abstract syntax: ~a" exp)])))
+
+(define list-of-items 
+  (lambda (x n)
+    (if (= n 0)
+      '()
+      (append (list x) (list-of-items x (- n 1))))))
 
 ; evaluate the list of operands, putting results into a list
 
@@ -83,7 +174,7 @@
         car cdr list null? assq eq? equal? atom? length list-vector list? 
         pair? procedure? vector->list list->vector vector make-vector vector-ref vector? number? 
         symbol? set-car! set-cdr! vector-set! display newline caar cadr cdar 
-        cddr caaar caadr cadar caddr cdaar cdadr cddar cdddr))
+        cddr caaar caadr cadar caddr cdaar cdadr cddar cdddr quotient))
 
 (define init-env         ; for now, our initial global environment only contains 
   (extend-env            ; procedure names.  Recall that an environment associates
@@ -157,6 +248,7 @@
       [(cdddr) (apply-and-check-args cdddr args 1 =)]
       [(newline) (newline)]
       [(display) (apply display args)]
+      [(quotient) (quotient (1st args) (2nd args))]
       [else (error 'apply-prim-proc 
             "Bad primitive procedure name: ~s" 
             prim-proc)])))
@@ -180,13 +272,13 @@
   (trace-lambda 18 ()
     (display "--> ")
     ;; notice that we don't save changes to the environment...
-    (let ([answer (top-level-eval (parse-exp (read)))])
+    (let ([answer (top-level-eval (syntax-expand (parse-exp (read))))])
       ;; TODO: are there answers that should display differently?
       (eopl:pretty-print answer) (newline)
       (rep))))  ; tail-recursive, so stack doesn't grow.
 
 (define eval-one-exp
-  (trace-lambda 19 (x) (top-level-eval (parse-exp x))))
+  (trace-lambda 19 (x) (top-level-eval (syntax-expand (parse-exp x)))))
 
 
 
