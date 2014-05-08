@@ -167,7 +167,7 @@
 (define *prim-proc-names* '(+ - * add1 sub1 cons = / zero? not < <= > >=
         car cdr list null? assq eq? equal? atom? length list-vector list? 
         pair? procedure? vector->list list->vector vector make-vector vector-ref vector? number? 
-        symbol? set-car! set-cdr! vector-set! display newline caar cadr cdar 
+        symbol? set-car! set-cdr! vector-set! display newline map apply caar cadr cdar 
         cddr caaar caadr cadar caddr cdaar cdadr cddar cdddr quotient))
 
 (define init-env         ; for now, our initial global environment only contains 
@@ -228,6 +228,12 @@
       [(set-car!) (apply-and-check-args set-car! args 2 =)]
       [(set-cdr!) (apply-and-check-args set-cdr! args 2 =)]
       [(vector-set!) (apply-and-check-args vector-set! args 3 =)]
+      [(map) (apply-and-check-args our-map args 2 >=)]
+      [(apply) (apply-and-check-args
+                  (lambda (proc ls . lsts)
+                    (apply-proc proc
+                      (flatten-apply
+                        (if (null? lsts) ls (cons ls lsts))))) args 2 >=)]
       [(caar) (apply-and-check-args caar args 1 =)]
       [(cadr) (apply-and-check-args cadr args 1 =)]
       [(cdar) (apply-and-check-args cdar args 1 =)]
@@ -246,6 +252,30 @@
       [else (error 'apply-prim-proc 
             "Bad primitive procedure name: ~s" 
             prim-proc)])))
+
+(define (flatten-apply ls)
+  (let flatten ((ls ls))
+    (cond ((null? (cdr ls))
+            (if (list? (car ls))
+                (car ls)
+                ; err
+                ))
+          (else (cons (car ls) (flatten (cdr ls)))))))
+
+(define our-map
+  (lambda (proc lst . lsts)
+    (if (null? lsts)
+        (let map1 ((ls lst))
+          (if (null? ls)
+              '()
+              (cons (apply-proc proc (car ls))
+                    (map1 (cdr ls)))))
+        (let map-more ((ls lst) (lsts lsts))
+          (if (null? ls)
+              '()
+              (cons (apply-proc proc (cons (car ls) (our-map (prim-proc 'car) (list lsts))))
+                    (map-more (cdr ls)
+                              (our-map (prim-proc 'cdr) (list lsts)))))))))
 
 ;Checks argument count 
 (define check-arg-count 
