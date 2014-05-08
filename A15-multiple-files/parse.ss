@@ -127,6 +127,8 @@
                     (map (lambda (x) (begin-exp (map parse-exp x))) bodies)))]
               [(eqv? (car datum) 'while)
                 (while-exp (parse-exp (cadr datum)) (map parse-exp (cddr datum)))]
+              [(eqv? (car datum) 'begin)
+                (begin-exp (map parse-exp (cdr datum)))]
               ;[(lit-exp? datum) (lit-exp datum)]
               [else
                 (app-exp (parse-exp (car datum)) (map parse-exp (cdr datum)))])]
