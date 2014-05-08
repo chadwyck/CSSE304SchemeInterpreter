@@ -36,8 +36,10 @@
     [cond-exp (conds bodies)
       (let ((body (if (equal? (begin-exp '()) (car bodies)) (lit-exp '#t) (car bodies))))
         (cond
-          [(= (length conds) 1)
+          [(and (= (length conds) 1) (not (eq? (cadar conds) 'else)))
             (if-no-else-exp (syntax-expand (car conds)) (syntax-expand body))]
+          [(eq? (cadar conds) 'else) 
+            (syntax-expand (car bodies))]
           [(and (= (length conds) 2) (equal? (cadadr conds) 'else))
             (if-exp (syntax-expand (car conds)) (syntax-expand body) (syntax-expand (cadr bodies)))]
           [else
