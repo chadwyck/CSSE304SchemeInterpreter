@@ -99,5 +99,9 @@
   [closure
     (args (list-of symbol?))
     (body (list-of expression?))
+    (env environment?)]
+  [closure-list
+    (args symbol?)
+    (body (list-of expression?))
     (env environment?)])
 	
