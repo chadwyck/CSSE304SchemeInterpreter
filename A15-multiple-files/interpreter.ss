@@ -22,9 +22,7 @@
     [while-exp (test bodies)
       (while-exp (syntax-expand test) (map syntax-expand bodies))]
     [begin-exp (body)
-      (if (equal? 'define-exp (caar body))
-        (begin-exp (list (letrec-exp (list (cadar body)) (list (caddar body)) (list (syntax-expand (app-exp (lambda-exp '() (cdr body)) '()))))))
-        (begin-exp (map syntax-expand body)))]
+        (app-exp (lambda-exp '() (map syntax-expand body)) '())]
     [app-exp (rator rand)
       (app-exp (syntax-expand rator) (map syntax-expand rand))]
     [let-exp (ids rands body)
@@ -124,12 +122,6 @@
             (eval-exp then-exp env))]
       [lambda-exp (args body)
         (closure args body env)]
-      [begin-exp (bodies)
-        (if (not (null? bodies))
-          (if (null? (cdr bodies))
-            (eval-exp (car bodies) env)
-            (begin (eval-exp (car bodies) env)
-              (eval-exp (begin-exp (cdr bodies)) env))))]
       [while-exp (test bodies)
         (if (eval-exp test env)
           (begin 
