@@ -17,14 +17,20 @@
                 (cond [(null? (cddr datum))
                         (eopl:error 'parse-exp
                           "lambda-expression: incorrect length ~s" datum)]
-                      [(and (not ((list-of symbol?) (cadr datum))) (not (symbol? (cadr datum))))
+                      [(and (not ((list-of symbol?) (cadr datum))) (not (symbol? (cadr datum))) (not (improper-list? (cadr datum))))
                         (eopl:error 'parse-exp
                           "lambda's formal arguments ~s must all be symbols" (cadr datum))]
                       [((list-of symbol?) (cadr datum))
                        (lambda-exp (cadr datum)
                         (map parse-exp (cddr datum)))]
-                      [else
+                      [(null? (cadr datum))
+                        (lambda-exp (cadr datum)
+                          (map parse-exp (cddr datum)))]
+                      [(symbol? (cadr datum))
                         (lambda-varlist-exp (cadr datum)
+                          (map parse-exp (cddr datum)))]
+                      [else
+                        (lambda-improperlist-exp (cadr datum)
                           (map parse-exp (cddr datum)))])]
               [(eqv? (car datum) 'let)
                 (cond [(symbol? (cadr datum))

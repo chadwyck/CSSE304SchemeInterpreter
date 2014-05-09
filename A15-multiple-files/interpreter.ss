@@ -21,6 +21,8 @@
         (lambda-exp id (map syntax-expand body))]
     [lambda-varlist-exp (id body)
         (lambda-varlist-exp id (map syntax-expand body))]
+    [lambda-improperlist-exp (id body)
+        (lambda-improperlist-exp id (map syntax-expand body))]
     [while-exp (test bodies)
       (while-exp (syntax-expand test) (map syntax-expand bodies))]
     [begin-exp (body)
@@ -130,6 +132,8 @@
         (closure args body env)]
       [lambda-varlist-exp (arg body)
         (closure-list arg body env)]
+      [lambda-improperlist-exp (arg body)
+        (closure-improperlist arg body env)]
       [while-exp (test bodies)
         (if (eval-exp test env)
           (begin 
@@ -166,9 +170,36 @@
               (begin 
                 (eval-exp (car body) new-env) 
                 (looping (cdr body))))))]
+      [closure-list (ids body env)
+        (let ([new-env (extend-env (list ids) (list args) env)])
+          (let looping ((body body)) 
+            (if (null? (cdr body))
+              (eval-exp (car body) new-env) 
+              (begin 
+                (eval-exp (car body) new-env) 
+                (looping (cdr body))))))]
+      [closure-improperlist (ids body env)
+        (let ([new-env (extend-env (improperlist-to-list ids) (improperlist-helper-args ids args) env)])
+          (let looping ((body body)) 
+            (if (null? (cdr body))
+              (eval-exp (car body) new-env) 
+              (begin 
+                (eval-exp (car body) new-env) 
+                (looping (cdr body))))))]
       [else (error 'apply-proc
                    "Attempt to apply bad procedure: ~s" 
                     proc-value)])))
+
+(define improperlist-to-list 
+  (lambda (parameters)
+    (if (symbol? (cdr parameters))
+        (list (car parameters) (cdr parameters))
+        (cons (car parameters) (improperlist-to-list (cdr parameters))))))
+(define improperlist-helper-args 
+  (lambda (improper-list args)
+    (if (symbol? (cdr improper-list))
+        (list (car args) (cdr args))
+        (cons (car args) (improperlist-helper-args (cdr improper-list) (cdr args))))))
 
 (define *prim-proc-names* '(+ - * add1 sub1 cons = / zero? not < <= > >=
         car cdr list null? assq eq? equal? atom? length list-vector list? 

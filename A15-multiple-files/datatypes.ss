@@ -11,6 +11,9 @@
                 #t #f)
               #f))
           null?))))
+(define improper-list?
+  (trace-lambda 37 (x)
+    (and (not (list? x)) (pair? x))))
 (define-datatype expression expression?
   [var-exp        ; variable references
    (id symbol?)]
@@ -25,6 +28,9 @@
       (list-of-bodies (list-of expression?))]
   [lambda-varlist-exp
     (id symbol?)
+    (list-of-bodies (list-of expression?))]
+  [lambda-improperlist-exp
+    (id improper-list?)
     (list-of-bodies (list-of expression?))]
   [let-exp
     (list-of-ids (list-of symbol?))
@@ -102,6 +108,10 @@
     (env environment?)]
   [closure-list
     (args symbol?)
+    (body (list-of expression?))
+    (env environment?)]
+  [closure-improperlist
+    (args improper-list?)
     (body (list-of expression?))
     (env environment?)])
 	
