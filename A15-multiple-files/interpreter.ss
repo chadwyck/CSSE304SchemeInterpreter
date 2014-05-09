@@ -64,14 +64,14 @@
     [case-exp (test keys bodies)
       (let ((tester ((lambda (test)
             (lambda (key)
-              (app-exp (var-exp 'eqv?) (list (syntax-expand test) (syntax-expand key)))
+              (app-exp (var-exp 'eq?) (list (syntax-expand test) (syntax-expand key)))
             )
           ) test)))
         (let ((test-exp (syntax-expand (or-exp (map tester (car keys))))))
           (cond
             [(= (length keys) 1)
               (if-no-else-exp test-exp (syntax-expand (car bodies)))]
-            [(and (= (length keys) 2) (equal? (cadadr keys) 'else))
+            [(and (= (length keys) 2) (equal? (cdadar keys) 'else))
               (if-exp test-exp (syntax-expand (car bodies)) (syntax-expand (cadr bodies)))]
             [else
               (if-exp test-exp (syntax-expand (car bodies))
