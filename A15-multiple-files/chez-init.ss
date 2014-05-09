@@ -205,12 +205,12 @@
 (define-syntax isa
   (syntax-rules ()
     ((_)
-     (define-datatype:report-error 'isa "isa expects 1 argument, not 0."))
+     (define-datatype:report-error 'isa "isa expects 1333 argument, not 0."))
     ((_ type-name)
      (if (symbol? 'type-name)
        (lambda args
          (if (null? args)
-           (define-datatype:report-error 'isa "(isa ~s) expects 1 argument, not 0." 'type-name)
+           (define-datatype:report-error 'isa "(isa ~s) expects 1444 argument, not 0." 'type-name)
            (if (null? (cdr args))
              (let ((variant (car args)))
                (let ((type-info type-name)) 
@@ -226,12 +226,12 @@
                      'type-name type-info))))
              (define-datatype:report-error 'isa
                (string-append
-                 "(isa ~s) expects 1 argument, not ~s. "
+                 "(isa ~s) expects 222 argument, not ~s. "
                  "  With argument list = ~s.")
                'type-name (length args) args))))
        (define-datatype:report-error 'isa "Type name is not a symbol: ~s." 'type-name)))
     ((_  type-name other ...)
-     (define-datatype:report-error 'isa "(isa ~s) expects 1 argument, not ~s with ~s."
+     (define-datatype:report-error 'isa "(isa ~s) expects 1999 argument, not ~s with ~s."
        'type-name (add1 (length '(other ...)))
        (cons 'isa '(type-name other ...))))))
 
@@ -265,7 +265,7 @@
          (if (symbol? 'Type-name)
            (lambda args
              (if (null? args)
-               (define-datatype:report-error 'Type-name? "expects 1 argument, not 0.")
+               (define-datatype:report-error 'Type-name? "expects 1555 argument, not 0.")
                (if (null? (cdr args))
                  (let ((variant (car args)))
                    (let ((type-info Type-name)) 
@@ -281,7 +281,7 @@
                          'type-name type-info))))
                  (define-datatype:report-error 'Type-name?
                    (string-append
-                     "expects 1 argument, not ~s. "
+                     "expects 111 argument, not ~s. "
                      "  With argument list = ~s.")
                     (length args) args))))
            (define-datatype:report-error 'Type-name "Type name is not a symbol: ~s." 'type-name)))

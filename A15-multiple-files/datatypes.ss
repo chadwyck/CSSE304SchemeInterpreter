@@ -115,3 +115,12 @@
     (body (list-of expression?))
     (env environment?)])
 	
+(define proc-val-er?
+  (lambda args
+    (if (null? (cdr args))
+      (proc-val? (car args))
+      (let ((a (car args)))
+        (or (equal? a 'prim-proc)
+                (equal? a 'closure)
+                (equal? a 'closure-list)
+                (equal? a 'closure-improperlist))))))
