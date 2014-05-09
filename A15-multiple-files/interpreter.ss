@@ -69,8 +69,10 @@
           ) test)))
         (let ((test-exp (syntax-expand (or-exp (map tester (car keys))))))
           (cond
-            [(= (length keys) 1)
+            [(and (= (length keys) 1) (not (eq? (car (cdr (caar keys))) 'else)))
               (if-no-else-exp test-exp (syntax-expand (car bodies)))]
+            [(eq? (car (cdr (caar keys))) 'else) 
+              (syntax-expand (car bodies))]
             [(and (= (length keys) 2) (equal? (cdadar keys) 'else))
               (if-exp test-exp (syntax-expand (car bodies)) (syntax-expand (cadr bodies)))]
             [else
