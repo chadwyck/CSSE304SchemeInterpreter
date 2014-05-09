@@ -19,6 +19,8 @@
       (if-no-else-exp (syntax-expand test-exp) (syntax-expand true-exp))]
     [lambda-exp (id body)
         (lambda-exp id (map syntax-expand body))]
+    [lambda-varlist-exp (id body)
+        (lambda-varlist-exp id (map syntax-expand body))]
     [while-exp (test bodies)
       (while-exp (syntax-expand test) (map syntax-expand bodies))]
     [begin-exp (body)
@@ -126,6 +128,8 @@
             (eval-exp then-exp env))]
       [lambda-exp (args body)
         (closure args body env)]
+      [lambda-varlist-exp (arg body)
+        (closure-list arg body env)]
       [while-exp (test bodies)
         (if (eval-exp test env)
           (begin 

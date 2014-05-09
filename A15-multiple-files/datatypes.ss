@@ -23,9 +23,9 @@
   [lambda-exp
       (id (list-of symbol?))
       (list-of-bodies (list-of expression?))]
-  ;[lambda-varlist-exp
-  ;  (id symbol?)
-  ;  (list-of-bodies (list-of expression?))]
+  [lambda-varlist-exp
+    (id symbol?)
+    (list-of-bodies (list-of expression?))]
   [let-exp
     (list-of-ids (list-of symbol?))
     (list-of-app (list-of expression?))
