@@ -254,7 +254,7 @@
       [(list->vector) (apply-and-check-args list->vector args 1 =)]
       [(list?) (apply-and-check-args list? args 1 =)]
       [(pair?) (apply-and-check-args pair? args 1 =)]
-      [(procedure?) (apply-and-check-args proc-val? args 1 =)]
+      [(procedure?) (apply-and-check-args proc-val? args 1 >=)]
       [(vector->list) (apply-and-check-args vector->list args 1 =)]
       [(vector) (apply-and-check-args vector args 0 >=)]
       [(make-vector) (apply-and-check-args make-vector args 1 =)]
@@ -295,8 +295,7 @@
     (cond ((null? (cdr ls))
             (if (list? (car ls))
                 (car ls)
-                ; err
-                ))
+                ls))
           (else (cons (car ls) (flatten (cdr ls)))))))
 
 (define our-map
