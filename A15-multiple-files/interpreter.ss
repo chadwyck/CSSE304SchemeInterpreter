@@ -51,7 +51,7 @@
               (syntax-expand (cond-exp (cdr conds) (cdr bodies))))]))]
     [set!-exp (id val)
       (set!-exp id (syntax-expand val))]
-    [letrec-exp (names ids rands body)
+    [letrec-exp (ids rands body)
       (letrec-exp ids (map syntax-expand rands) (map syntax-expand body))]
     [and-exp (conds)
       (if (null? conds)
@@ -117,7 +117,7 @@
                 (eval-exp (car bodies) new-env)
                 (begin (eval-exp (car bodies) new-env)
                        (loop (cdr bodies))))))]
-      [letrec-exp (proc-names idss bodies letrec-body)
+      [letrec-exp (ids exprs letrec-body)
         (eval-exp letrec-body
           (extend-env-recursively
             proc-names idss bodies env))]

@@ -47,7 +47,7 @@
                                 (eopl:error 'parse-exp
                                   "first members must be symbols: ~s" (caddr datum))]
                               [else
-                                (let-name-exp (cadr datum) (map parse-exp (caddr datum)) (map parse-exp (cdddr datum)))])]
+                                (let-name-exp (cadr datum) (car (apply map list (caddr datum))) (map parse-exp (cadr (apply map list (caddr datum)))) (map parse-exp (cdddr datum)))])]
                       [(list? (cadr datum))
                         (cond [(< (length datum) 3)
                                 (eopl:error 'parse-exp
@@ -100,7 +100,7 @@
                                 (eopl:error 'parse-exp
                                   "first members must be symbols: ~s" (cadr datum))]
                               [else
-                                (letrec-exp (map parse-exp (cadr datum)) (map parse-exp (cddr datum)))])]
+                                (letrec-exp (car (apply map list (cadr datum))) (map parse-exp (cadr (apply map list (cadr datum)))) (map parse-exp (cddr datum)))])]
                       [else
                         (eopl:error 'parse-exp
                           "declarations in ~s-expression not a list ~s" (car datum) datum)])]

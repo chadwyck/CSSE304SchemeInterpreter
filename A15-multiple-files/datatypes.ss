@@ -46,8 +46,7 @@
     (list-of-app (list-of expression?))
     (list-of-bodies (list-of expression?))]
   [letrec-exp
-    (list-of-proc-names (list-of expression?))
-    (list-of-ids (list-of expression?))
+    (list-of-ids (list-of symbol?))
     (list-of-app (list-of expression?))
     (list-of-bodies (list-of expression?))]
   [app-exp
