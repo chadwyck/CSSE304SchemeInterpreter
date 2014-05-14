@@ -90,7 +90,7 @@
   (empty-env-record)
   (extended-env-record
    (syms (list-of symbol?))
-   (vals (list-of scheme-value?))
+   (vals (lambda (x) (or ((list-of scheme-value?) x) (scheme-value? x))))
    (env environment?))
   [recursively-extended-env-record
     (proc-names (list-of symbol?))

@@ -6,7 +6,9 @@
 
 (define extend-env
   (trace-lambda 32 (syms vals env)
-    (extended-env-record syms vals env)))
+    (if (not ((list-of scheme-value?) vals))
+      (extended-env-record syms (list vals) env)) 
+      (extended-env-record syms vals env)))
 
 (define extend-env-recursively
   (lambda (proc-names ids bodies old-env)
@@ -35,7 +37,9 @@
       [extended-env-record (syms vals env)
         (let ((pos (list-find-position sym syms)))
       	  (if (number? pos)
-    	      (succeed (list-ref vals pos))
+    	      (if (list? vals)
+              (succeed (list-ref vals pos))
+              (succeed vals))
     	      (apply-env env sym succeed fail)))]
       [recursively-extended-env-record
         (procnames idss bodies old-env)
