@@ -32,7 +32,7 @@
     [let-exp (ids rands body)
         (app-exp (syntax-expand (lambda-exp ids body)) (map syntax-expand rands))]
     [let-name-exp (name ids rands body)
-        (app-exp (letrec-exp (list name) (list (lambda-exp ids (map syntax-expand body))) (list (var-exp name))) rands)]
+        (app-exp (letrec-exp (list name) (list ids) body (parse-exp name)) rands)]  ; DERP: This is totes wrong
     [let*-exp (ids rands body)
         (if (null? ids)
           (app-exp (lambda-exp '() (map syntax-expand body)) '())
@@ -51,8 +51,8 @@
               (syntax-expand (cond-exp (cdr conds) (cdr bodies))))]))]
     [set!-exp (id val)
       (set!-exp id (syntax-expand val))]
-    [letrec-exp (ids rands body)
-      (letrec-exp ids (map syntax-expand rands) (map syntax-expand body))]
+    [letrec-exp (proc-name ids rands body)
+      (letrec-exp proc-name ids (map syntax-expand rands) (syntax-expand body))]
     [and-exp (conds)
       (if (null? conds)
         (lit-exp '#t)
@@ -117,10 +117,11 @@
                 (eval-exp (car bodies) new-env)
                 (begin (eval-exp (car bodies) new-env)
                        (loop (cdr bodies))))))]
-      [letrec-exp (ids exprs letrec-body)
+      [letrec-exp (proc-names ids exprs letrec-body)
         (eval-exp letrec-body
           (extend-env-recursively
-            proc-names idss bodies env))]
+            proc-names ids exprs env))]
+
       [if-exp (test-exp then-exp else-exp)
         (if (eval-exp test-exp env)
             (eval-exp then-exp env)
@@ -202,7 +203,7 @@
         (cons (car args) (improperlist-helper-args (cdr improper-list) (cdr args))))))
 
 (define *prim-proc-names* '(+ - * add1 sub1 cons = / zero? not < <= > >=
-        car cdr list null? assq eq? equal? atom? length list-vector list? 
+        car cdr list null? assq eq? eqv? equal? atom? length list-vector list? 
         pair? procedure? vector->list list->vector vector make-vector vector-ref vector? number? 
         symbol? set-car! set-cdr! vector-set! display newline map apply caar cadr cdar 
         cddr caaar caadr cadar caddr cdaar cdadr cddar cdddr quotient))
@@ -249,6 +250,7 @@
       [(assq) (apply-and-check-args assq args 2 =)]
       [(eq?) (apply-and-check-args eq? args 2 =)]
       [(equal?) (apply-and-check-args equal? args 2 =)]
+      [(eqv?) (apply-and-check-args eqv? args 2 =)]
       [(atom?) (apply-and-check-args atom? args 1 =)]
       [(length) (apply-and-check-args length args 1 =)]
       [(list->vector) (apply-and-check-args list->vector args 1 =)]
@@ -286,6 +288,7 @@
       [(newline) (newline)]
       [(display) (apply display args)]
       [(quotient) (quotient (1st args) (2nd args))]
+      [(append) (apply-and-check-args append args 2 >=)]
       [else (error 'apply-prim-proc 
             "Bad primitive procedure name: ~s" 
             prim-proc)])))

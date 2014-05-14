@@ -37,7 +37,7 @@
     (list-of-app (list-of expression?))
     (list-of-bodies (list-of expression?))]
   [let-name-exp
-    (name expression?)
+    (name symbol?)
     (list-of-ids (list-of symbol?))
     (list-of-app (list-of expression?))
     (list-of-bodies (list-of expression?))]
@@ -46,9 +46,10 @@
     (list-of-app (list-of expression?))
     (list-of-bodies (list-of expression?))]
   [letrec-exp
-    (list-of-ids (list-of symbol?))
-    (list-of-app (list-of expression?))
-    (list-of-bodies (list-of expression?))]
+    (proc-names (list-of symbol?))
+    (idss (list-of (list-of symbol?)))
+    (bodies (list-of expression?))
+    (letrec-body expression?)]
   [app-exp
     (rator expression?)
     (rand (list-of expression?))]
@@ -90,7 +91,12 @@
   (extended-env-record
    (syms (list-of symbol?))
    (vals (list-of scheme-value?))
-   (env environment?)))
+   (env environment?))
+  [recursively-extended-env-record
+    (proc-names (list-of symbol?))
+    (idss (list-of (list-of symbol?)))
+    (bodies (list-of expression?))
+    (env environment?)])
 
 
 
