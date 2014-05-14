@@ -118,9 +118,9 @@
                 (begin (eval-exp (car bodies) new-env)
                        (loop (cdr bodies))))))]
       [letrec-exp (proc-names ids exprs letrec-body)
-        (eval-exp letrec-body
-          (extend-env-recursively
-            proc-names ids exprs env))]
+          (eval-exp letrec-body
+            (extend-env-recursively
+              proc-names ids exprs env))]
 
       [if-exp (test-exp then-exp else-exp)
         (if (eval-exp test-exp env)
@@ -206,7 +206,7 @@
         car cdr list null? assq eq? eqv? equal? atom? length list-vector list? 
         pair? procedure? vector->list list->vector vector make-vector vector-ref vector? number? 
         symbol? set-car! set-cdr! vector-set! display newline map apply caar cadr cdar 
-        cddr caaar caadr cadar caddr cdaar cdadr cddar cdddr quotient))
+        cddr caaar caadr cadar caddr cdaar cdadr cddar cdddr quotient append list-tail))
 
 (define init-env         ; for now, our initial global environment only contains 
   (extend-env            ; procedure names.  Recall that an environment associates
@@ -289,6 +289,7 @@
       [(display) (apply display args)]
       [(quotient) (quotient (1st args) (2nd args))]
       [(append) (apply-and-check-args append args 2 >=)]
+      [(list-tail) (apply-and-check-args list-tail args 2 >=)]
       [else (error 'apply-prim-proc 
             "Bad primitive procedure name: ~s" 
             prim-proc)])))
