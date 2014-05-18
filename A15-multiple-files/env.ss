@@ -51,3 +51,31 @@
                         env)
               (apply-env old-env sym succeed fail)))])))
 
+(define apply-env-ref 
+  (lambda (env sym)
+    (cases environment env
+      (empty-env-record ()
+        (eopl:error 'apply-env ; procedure to call if id not in env
+                "variable not found in environment: ~s"
+                  id))
+      [extended-env-record (syms vals env)
+        (let ((pos (list-find-position sym syms)))
+          (if (number? pos)
+            (if (list? vals)
+              (box (list-ref vals pos))
+              (box vals))
+            (apply-env-ref env sym)))]
+      [recursively-extended-env-record
+        (procnames idss bodies old-env)
+        (let ([pos 
+              (list-find-position sym procnames)])
+          (if (number? pos)
+              (box (closure (list-ref idss pos)
+                                      (list (list-ref bodies pos))
+                                      env))
+              (apply-env-ref old-env sym)))])))
+
+(define deref
+  unbox)
+(define set-ref! 
+  set-box!)

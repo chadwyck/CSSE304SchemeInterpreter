@@ -140,6 +140,9 @@
           (begin 
             (map eval-exp bodies (list-of-items env (length bodies)))
             (eval-exp (while-exp test bodies) env)))]
+      [set!-exp (id exp)
+        (set-ref! (apply-env-ref env id)
+                  (eval-exp exp env))]
       [else (eopl:error 'eval-exp "Bad abstract syntax: ~a" exp)])))
 
 (define list-of-items 
