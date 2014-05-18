@@ -129,6 +129,8 @@
       [if-no-else-exp (test-exp then-exp)
         (if (eval-exp test-exp env)
             (eval-exp then-exp env))]
+      [define-exp (var body)
+        ()]
       [lambda-exp (args body)
         (closure args body env)]
       [lambda-varlist-exp (arg body)

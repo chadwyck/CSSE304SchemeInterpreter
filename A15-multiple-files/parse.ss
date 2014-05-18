@@ -13,7 +13,12 @@
       [(symbol? datum) (var-exp datum)]
       [(lit-exp? datum) (lit-exp (if (pair? datum) (if (equal? (car datum) 'quote) (cadr datum) datum) datum))]
       [(list? datum)
-        (cond [(eqv? (car datum) 'lambda)
+        (cond [(eqv? (car datum) 'define)
+                (cond [(pair? (cadr datum))
+                        (define-exp (caadr datum) (lambda-exp (cdadr datum) (map parse-exp (cddr datum))))]
+                      [else
+                        (define-exp (cadr datum) (parse-exp (caddr datum)))])]
+              [(eqv? (car datum) 'lambda)
                 (cond [(null? (cddr datum))
                         (eopl:error 'parse-exp
                           "lambda-expression: incorrect length ~s" datum)]

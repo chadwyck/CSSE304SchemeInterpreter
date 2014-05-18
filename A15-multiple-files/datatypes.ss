@@ -1,11 +1,11 @@
 
 ;; Parsed expression datatypes
 (define lit-exp?
-  (trace-lambda 0 (x)
+  (lambda (x)
       (ormap 
-       (trace-lambda 1 (pred) (pred x))
+       (lambda (pred) (pred x))
        (list number? vector? boolean? symbol? string? 
-          (trace-lambda 2 (x)
+          (lambda (x)
             (if (pair? x)
               (if (equal? (car x) 'quote)
                 #t #f)
@@ -23,6 +23,9 @@
       (ormap 
        (trace-lambda 4 (pred) (pred x))
        (list number? vector? boolean? symbol? string? pair? null?))))]
+  [define-exp
+   (var symbol?)
+   (body expression?)]
   [lambda-exp
       (id (list-of symbol?))
       (list-of-bodies (list-of expression?))]
