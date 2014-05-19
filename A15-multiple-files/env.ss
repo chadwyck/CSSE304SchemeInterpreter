@@ -5,7 +5,7 @@
     (set! global-env init-env)))
 
 (define empty-env
-  (trace-lambda 31 ()
+  (lambda ()
     (empty-env-record)))
 
 (define extend-by-one-env
@@ -13,7 +13,7 @@
     (list 'extended-env-record (cons syms (cadr env)) (cons (box vals) (caddr env)))))
 
 (define extend-env
-  (trace-lambda 32 (syms vals env)
+  (lambda (syms vals env)
     (if (not ((list-of scheme-value?) vals))
       (extended-env-record syms (list (map box vals)) env)) 
       (extended-env-record syms (map box vals) env)))
@@ -24,7 +24,7 @@
       proc-names ids bodies old-env)))
 
 (define list-find-position
-  (trace-lambda 33 (sym los)
+  (lambda (sym los)
     (list-index (lambda (xsym) (eqv? sym xsym)) los)))
 
 (define list-index

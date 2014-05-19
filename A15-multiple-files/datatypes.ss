@@ -12,16 +12,16 @@
               #f))
           null?))))
 (define improper-list?
-  (trace-lambda 37 (x)
+  (lambda (x)
     (and (not (list? x)) (pair? x))))
 (define-datatype expression expression?
   [var-exp        ; variable references
    (id symbol?)]
   [lit-exp        ; "Normal" data.  Did I leave out any types?
    (datum
-    (trace-lambda 3 (x)
+    (lambda (x)
       (ormap 
-       (trace-lambda 4 (pred) (pred x))
+       (lambda (pred) (pred x))
        (list number? vector? boolean? symbol? string? pair? null?))))]
   [define-exp
    (var symbol?)
@@ -87,7 +87,7 @@
 ;; environment type definitions
 
 (define scheme-value?
-  (trace-lambda 5 (x) #t))
+  (lambda (x) #t))
 
 (define-datatype environment environment?
   (empty-env-record)

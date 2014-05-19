@@ -1,7 +1,7 @@
 ; top-level-eval evaluates a form in the global environment
 
 (define top-level-eval
-  (trace-lambda 6 (form)
+  (lambda (form)
     ; later we may add things that are not expressions.
     ;(display form)
     (if (eq? (car form) 'define-exp)
@@ -12,7 +12,7 @@
 
 
 
-(define syntax-expand (trace-lambda 999 (exp)
+(define syntax-expand (lambda (exp)
   (cases expression exp
     [var-exp (id) exp]
     [lit-exp (val) exp]
@@ -67,9 +67,9 @@
     [or-exp (conds)
       (if (null? conds)
         (lit-exp '#f)
-        (if (= (length conds) 1)
-          (if-exp (syntax-expand (car conds)) (car conds) (lit-exp '#f))
-          (if-exp (syntax-expand (car conds)) (car conds) (syntax-expand (or-exp (cdr conds))))))]
+        (if (null? (cdr conds))
+          (syntax-expand (car conds))
+          (if-exp (syntax-expand (car conds)) (lit-exp #t) (syntax-expand (or-exp (cdr conds))))))]
     [case-exp (test keys bodies)
       (let ((tester ((lambda (test)
             (lambda (key)
@@ -94,7 +94,7 @@
 ; eval-exp is the main component of the interpreter
 
 (define eval-exp
-  (trace-lambda 7 (exp env)
+  (lambda (exp env)
     (cases expression exp
       [lit-exp (datum) datum]
       [begin-exp (bodies) 
@@ -105,10 +105,10 @@
               (looping (cdr body)))))]
       [var-exp (id)
         (apply-env env id; look up its value.
-          (trace-lambda 8 (x) x) ; procedure to call if id is in the environment 
-          (trace-lambda 9 ()
+          (lambda (x) x) ; procedure to call if id is in the environment 
+          (lambda ()
             (apply-env global-env id ; Eventually we want to change init-env to global-env to have a better name
-              (trace-lambda 10 (x) x)
+              (lambda (x) x)
               (eopl:error 'apply-env ; procedure to call if id not in env
                 "variable not found in environment: ~s"
                   id))
@@ -120,7 +120,7 @@
       [let-exp (ids exprs bodies)
         (let ([new-env
                 (extend-env ids
-                            (map (trace-lambda 11 (x) (eval-exp x env))
+                            (map (lambda (x) (eval-exp x env))
                               exprs)
                             env)])
           (let loop ([bodies bodies])
@@ -168,15 +168,15 @@
 ; evaluate the list of operands, putting results into a list
 
 (define eval-rands
-  (trace-lambda 12 (rands env)
-    (map (trace-lambda 13 (x) (eval-exp x env)) rands)))
+  (lambda (rands env)
+    (map (lambda (x) (eval-exp x env)) rands)))
 
 ;  Apply a procedure to its arguments.
 ;  At this point, we only have primitive procedures.  
 ;  User-defined procedures will be added later.
 
 (define apply-proc
-  (trace-lambda 14 (proc-value args)
+  (lambda (proc-value args)
     (cases proc-val proc-value
       [prim-proc (op) (apply-prim-proc op args)]
 			; You will add other cases
@@ -239,7 +239,7 @@
 ; built-in procedure individually.  We are "cheating" a little bit.
 
 (define apply-prim-proc
-  (trace-lambda 15 (prim-proc args)
+  (lambda (prim-proc args)
     (case prim-proc
       [(+) (apply-and-check-args + args 0 >=)]
       [(-) (apply-and-check-args - args 1 >=)]
@@ -346,13 +346,13 @@
 
 ;Checks argument count 
 (define check-arg-count 
-  (trace-lambda 16 (args num check) 
+  (lambda (args num check) 
     (check (length args) num)))
 
 ;First checks the argument number then applies given procedure
 ; to the argument list if it is right number of arguments.
 (define apply-and-check-args 
-  (trace-lambda 17 (proc args num check) 
+  (lambda (proc args num check) 
     (if (check-arg-count args num check) 
       (apply proc args) 
       (error 'apply-built-in-proc 
@@ -360,7 +360,7 @@
          proc check num (length args)))))
 
 (define rep      ; "read-eval-print" loop.
-  (trace-lambda 18 ()
+  (lambda ()
     (display "--> ")
     ;; notice that we don't save changes to the environment...
     (let ([answer (top-level-eval (syntax-expand (parse-exp (read))))])
@@ -369,7 +369,7 @@
       (rep))))  ; tail-recursive, so stack doesn't grow.
 
 (define eval-one-exp
-  (trace-lambda 19 (x) (top-level-eval (syntax-expand (parse-exp x)))))
+  (lambda (x) (top-level-eval (syntax-expand (parse-exp x)))))
 
 
 

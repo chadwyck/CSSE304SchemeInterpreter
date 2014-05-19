@@ -8,7 +8,7 @@
 (define 3rd caddr)
 
 (define parse-exp
-  (trace-lambda parse-exp (datum)
+  (lambda (datum)
     (cond
       [(symbol? datum) (var-exp datum)]
       [(lit-exp? datum) (lit-exp (if (pair? datum) (if (equal? (car datum) 'quote) (cadr datum) datum) datum))]
