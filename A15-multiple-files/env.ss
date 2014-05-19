@@ -4,6 +4,10 @@
   (trace-lambda 31 ()
     (empty-env-record)))
 
+(define extend-by-one-env
+  (lambda (syms vals env)
+    (list 'extended-env-record (cons syms (cadr env)) (cons (box vals) (caddr env)))))
+
 (define extend-env
   (trace-lambda 32 (syms vals env)
     (if (not ((list-of scheme-value?) vals))
@@ -60,7 +64,7 @@
   (lambda (env sym succeed fail) ; succeed and fail are procedures applied if the var is or isn't found, respectively.
     (cases environment env
       (empty-env-record ()
-        (fail))
+        (apply-env-ref init-env sym succeed fail))  ; DERP: So this can possibly infinite loop
       [extended-env-record (syms vals env)
         (let ((pos (list-find-position sym syms)))
           (if (number? pos)

@@ -4,7 +4,10 @@
   (trace-lambda 6 (form)
     ; later we may add things that are not expressions.
     ;(display form)
-    (eval-exp form init-env)))
+    (if (eq? (car form) 'define-exp)
+      (set! init-env (extend-env (list (cadr form)) (list (eval-exp (caddr form) init-env)) init-env))
+      (eval-exp form init-env)
+      )))
 
 
 
@@ -26,7 +29,7 @@
     [while-exp (test bodies)
       (while-exp (syntax-expand test) (map syntax-expand bodies))]
     [begin-exp (body)
-        (app-exp (lambda-exp '() (map syntax-expand body)) '())]
+        (begin-exp (map syntax-expand body))]
     [app-exp (rator rand)
       (app-exp (syntax-expand rator) (map syntax-expand rand))]
     [let-exp (ids rands body)
@@ -51,6 +54,8 @@
               (syntax-expand (cond-exp (cdr conds) (cdr bodies))))]))]
     [set!-exp (id val)
       (set!-exp id (syntax-expand val))]
+    [define-exp (var body)
+      (define-exp var (syntax-expand body))]
     [letrec-exp (proc-name ids rands body)
       (letrec-exp proc-name ids (map syntax-expand rands) (syntax-expand body))]
     [and-exp (conds)
@@ -92,6 +97,12 @@
   (trace-lambda 7 (exp env)
     (cases expression exp
       [lit-exp (datum) datum]
+      [begin-exp (bodies) 
+        (let looping ([body bodies]) 
+          (if (null? (cdr body)) 
+            (eval-exp (car body) env) 
+            (begin (eval-exp (car body) env) 
+              (looping (cdr body)))))]
       [var-exp (id)
         (apply-env env id; look up its value.
           (trace-lambda 8 (x) x) ; procedure to call if id is in the environment 
@@ -130,7 +141,8 @@
         (if (eval-exp test-exp env)
             (eval-exp then-exp env))]
       [define-exp (var body)
-        ()]
+          (set! init-env (extend-env (list var) (list (eval-exp body env)) init-env))]
+        ;(set! init-env (extend-env (list var) (list (eval-exp body env)) env)) ]
       [lambda-exp (args body)
         (closure args body env)]
       [lambda-varlist-exp (arg body)
@@ -170,12 +182,12 @@
 			; You will add other cases
       [closure (ids body env)
         (let ([new-env (extend-env ids args env)])  ; DERP: It's not working. 
-          (let looping ((body body)) 
+          (let looping ((body body) (environ new-env)) 
             (if (null? (cdr body))
-              (eval-exp (car body) new-env) 
+              (eval-exp (car body) environ) 
               (begin 
-                (eval-exp (car body) new-env) 
-                (looping (cdr body))))))]
+                (eval-exp (car body) environ) 
+                (looping (cdr body) environ)))))]
       [closure-list (ids body env)
         (let ([new-env (extend-env (list ids) (list args) env)])
           (let looping ((body body)) 
