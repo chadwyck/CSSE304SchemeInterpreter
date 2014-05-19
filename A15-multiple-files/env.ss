@@ -81,9 +81,9 @@
         (let ([pos 
               (list-find-position sym procnames)])
           (if (number? pos)
-              (closure (list-ref idss pos)
-                        (list (list-ref bodies pos))
-                        env)
+              (box (closure (list-ref idss pos)
+                                      (list (list-ref bodies pos))
+                                      env))
               (apply-env-ref old-env sym succeed fail)))])))
 
 (define deref unbox)
