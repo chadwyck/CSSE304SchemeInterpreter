@@ -5,8 +5,8 @@
     ; later we may add things that are not expressions.
     ;(display form)
     (if (eq? (car form) 'define-exp)
-      (set! init-env (extend-env (list (cadr form)) (list (eval-exp (caddr form) init-env)) init-env))
-      (eval-exp form init-env)
+      (set! global-env (extend-env (list (cadr form)) (list (eval-exp (caddr form) global-env)) global-env))
+      (eval-exp form global-env)
       )))
 
 
@@ -107,7 +107,7 @@
         (apply-env env id; look up its value.
           (trace-lambda 8 (x) x) ; procedure to call if id is in the environment 
           (trace-lambda 9 ()
-            (apply-env init-env id ; Eventually we want to change init-env to global-env to have a better name
+            (apply-env global-env id ; Eventually we want to change init-env to global-env to have a better name
               (trace-lambda 10 (x) x)
               (eopl:error 'apply-env ; procedure to call if id not in env
                 "variable not found in environment: ~s"
@@ -141,7 +141,7 @@
         (if (eval-exp test-exp env)
             (eval-exp then-exp env))]
       [define-exp (var body)
-          (set! init-env (extend-env (list var) (list (eval-exp body env)) init-env))]
+          (set! global-env (extend-env (list var) (list (eval-exp body env)) global-env))]
         ;(set! init-env (extend-env (list var) (list (eval-exp body env)) env)) ]
       [lambda-exp (args body)
         (closure args body env)]
@@ -231,6 +231,9 @@
      (map prim-proc      
           *prim-proc-names*)
      (empty-env)))
+
+(define global-env
+  init-env)
 
 ; Usually an interpreter must define each 
 ; built-in procedure individually.  We are "cheating" a little bit.

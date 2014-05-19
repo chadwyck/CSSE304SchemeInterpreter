@@ -1,5 +1,9 @@
 ; Environment definitions for CSSE 304 Scheme interpreter.  Based on EoPL section 2.3
 
+(define reset-global-env 
+  (lambda ()
+    (set! global-env init-env)))
+
 (define empty-env
   (trace-lambda 31 ()
     (empty-env-record)))
@@ -64,7 +68,7 @@
   (lambda (env sym succeed fail) ; succeed and fail are procedures applied if the var is or isn't found, respectively.
     (cases environment env
       (empty-env-record ()
-        (apply-env-ref init-env sym succeed fail))  ; DERP: So this can possibly infinite loop
+        (apply-env-ref global-env sym succeed fail))  ; DERP: So this can possibly infinite loop. Also changed this to global-env
       [extended-env-record (syms vals env)
         (let ((pos (list-find-position sym syms)))
           (if (number? pos)
