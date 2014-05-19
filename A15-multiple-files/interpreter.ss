@@ -288,11 +288,15 @@
       [(set-cdr!) (apply-and-check-args set-cdr! args 2 =)]
       [(vector-set!) (apply-and-check-args vector-set! args 3 =)]
       [(map) (apply-and-check-args our-map args 2 >=)]
+      ;[(apply) (apply-and-check-args
+      ;            (lambda (proc ls . lsts)
+      ;              (apply-proc proc
+      ;                (flatten-apply
+      ;                  (if (null? lsts) ls (cons ls lsts))))) args 2 >=)]
       [(apply) (apply-and-check-args
                   (lambda (proc ls . lsts)
                     (apply-proc proc
-                      (flatten-apply
-                        (if (null? lsts) ls (cons ls lsts))))) args 2 >=)]
+                      (if (null? lsts) ls (cons ls lsts)))) args 2 >=)]
       [(caar) (apply-and-check-args caar args 1 =)]
       [(cadr) (apply-and-check-args cadr args 1 =)]
       [(cdar) (apply-and-check-args cdar args 1 =)]
@@ -315,6 +319,9 @@
             prim-proc)])))
 
 (define (flatten-apply ls)
+  (if (null? ls)
+      consequent
+      alternative)
   (let flatten ((ls ls))
     (cond ((null? (cdr ls))
             (if (list? (car ls))
@@ -328,12 +335,12 @@
         (let map1 ((ls lst))
           (if (null? ls)
               '()
-              (cons (apply-proc proc (car ls))
+              (cons (apply-proc proc (list (car ls)))
                     (map1 (cdr ls)))))
         (let map-more ((ls lst) (lsts lsts))
           (if (null? ls)
               '()
-              (cons (apply-proc proc (cons (car ls) (our-map (prim-proc 'car) (list lsts))))
+              (cons (apply-proc proc (cons (list (car ls)) (our-map (prim-proc 'car) (list lsts))))
                     (map-more (cdr ls)
                               (our-map (prim-proc 'cdr) (list lsts)))))))))
 
