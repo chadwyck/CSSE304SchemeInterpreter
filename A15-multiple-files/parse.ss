@@ -8,7 +8,7 @@
 (define 3rd caddr)
 
 (define parse-exp
-  (lambda (datum)
+  (trace-lambda parse-exp (datum)
     (cond
       [(symbol? datum) (var-exp datum)]
       [(lit-exp? datum) (lit-exp (if (pair? datum) (if (equal? (car datum) 'quote) (cadr datum) datum) datum))]
@@ -52,7 +52,13 @@
                                 (eopl:error 'parse-exp
                                   "first members must be symbols: ~s" (caddr datum))]
                               [else
-                                (let-name-exp (cadr datum) (car (apply map list (caddr datum))) (map parse-exp (cadr (apply map list (caddr datum)))) (map parse-exp (cdddr datum)))])]
+                                (let-name-exp (cadr datum) (if (null? (caddr datum))
+                                                                (list)
+                                                                (car (apply map list (caddr datum))))
+                                                            (if (null? (caddr datum))
+                                                                (list)
+                                                                (map parse-exp (cadr (apply map list (caddr datum)))))
+                                                            (map parse-exp (cdddr datum)))])]
                       [(list? (cadr datum))
                         (cond [(< (length datum) 3)
                                 (eopl:error 'parse-exp
