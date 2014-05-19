@@ -5,7 +5,7 @@
     ; later we may add things that are not expressions.
     ;(display form)
     (if (eq? (car form) 'define-exp)
-      (set! global-env (extend-env (list (cadr form)) (list (eval-exp (caddr form) global-env)) global-env))
+      (set! global-env (extend-env (list (cadr form)) (list (eval-exp (caddr form) (empty-env))) global-env))
       (eval-exp form global-env)
       )))
 
