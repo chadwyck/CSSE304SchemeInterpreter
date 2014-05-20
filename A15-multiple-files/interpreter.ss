@@ -35,7 +35,7 @@
     [let-exp (ids rands body)
         (app-exp (syntax-expand (lambda-exp ids body)) (map syntax-expand rands))]
     [let-name-exp (name ids rands body)
-        (app-exp (letrec-exp (list name) (list ids) body (parse-exp name)) rands)]  ; DERP: This is totes wrong
+        (app-exp (letrec-exp (list name) (list ids) (map syntax-expand body) (parse-exp name)) rands)]  ; DERP: This is totes wrong
     [let*-exp (ids rands body)
         (if (null? ids)
           (app-exp (lambda-exp '() (map syntax-expand body)) '())
