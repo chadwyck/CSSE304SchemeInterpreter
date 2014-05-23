@@ -39,8 +39,11 @@
 
 ; This is the new apply-env
 (define apply-env
-  (lambda (env sym succeed fail) 
-    (deref (apply-env-ref env sym succeed fail))))
+  (lambda (env sym succeed fail)
+    (let ([ans (apply-env-ref env sym succeed fail)])
+      (if (box? ans)
+        (deref ans)
+        ans))))
 
 (define apply-env-ref 
   (lambda (env sym succeed fail) ; succeed and fail are procedures applied if the var is or isn't found, respectively.

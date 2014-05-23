@@ -136,8 +136,9 @@
                   env
                   (test-k then-exp else-exp env k))]
       [if-no-else-exp (test-exp then-exp)
-        (if (eval-exp test-exp env)
-            (eval-exp then-exp env))]
+        (eval-exp test-exp
+                  env
+                  (test-no-else-k then-exp env k))]
       [define-exp (var body)
           (set! global-env (extend-env (list var) (list (eval-exp body env)) global-env))]
         ;(set! init-env (extend-env (list var) (list (eval-exp body env)) env)) ]
@@ -164,17 +165,23 @@
       (append (list x) (list-of-items x (- n 1))))))
 
 ; evaluate the list of operands, putting results into a list
+; DERP This isn't working. Prim procs inf loop.b
+;(define eval-rands
+;  (lambda (rands env k)
+;    (map-cps (eval-one-exp '(lambda (x) (eval-exp x env k))) rands k)))
 
-(define eval-rands
+(define eval-rands 
   (lambda (rands env k)
-    (map-cps (eval-one-exp '(lambda (x kont) (eval-exp x env kont))) rands k)))
+    (if (null? rands)
+        (apply-k k '())
+        (eval-exp (car rands) env (eval-rands-k env (cdr rands) k)))))
 
 (define map-cps
   (lambda (proc-cps ls k)
     (if (null? ls)
-  (apply-k k '())
-  (apply-proc proc-cps (list (car ls))
-      (map-k proc-cps (cdr ls) k)))))
+        (apply-k k '())
+        (apply-proc proc-cps (list (car ls))
+            (map-k proc-cps (cdr ls) k)))))
 
 ;  Apply a procedure to its arguments.
 ;  At this point, we only have primitive procedures.  
@@ -246,11 +253,11 @@
 ; built-in procedure individually.  We are "cheating" a little bit.
 
 (define apply-prim-proc
-  (trace-lambda app-prim-proc (prim-proc args k)
+  (lambda (prim-proc args k)
     (case prim-proc
       [(+) (apply-k k (apply-and-check-args + args 0 >=))]
-      [(-) (apply-and-check-args - args 1 >=)]
-      [(*) (apply-and-check-args * args 0 >=)]
+      [(-) (apply-k k (apply-and-check-args - args 1 >=))]
+      [(*) (apply-k k (apply-and-check-args * args 0 >=))]
       [(add1) (if (= (length args) 1) 
                 (+ (1st args) 1) 
                 (error 'apply-prim-proc 
