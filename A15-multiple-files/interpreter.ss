@@ -1,11 +1,11 @@
 ; top-level-eval evaluates a form in the global environment
-
+;(define init-k (init-k))
 (define top-level-eval
   (lambda (form)
     ; later we may add things that are not expressions.
     ;(display form)
     (if (eq? (car form) 'define-exp)
-      (set! global-env (extend-env (list (cadr form)) (list (eval-exp (caddr form) (empty-env) k)) global-env))
+      (set! global-env (extend-env (list (cadr form)) (list (eval-exp (caddr form) (empty-env) (init-k))) global-env))
       (eval-exp form global-env (init-k))
       )))
 
@@ -94,7 +94,7 @@
 ; eval-exp is the main component of the interpreter
 
 (define eval-exp
-  (lambda (exp env k)
+  (trace-lambda wtf (exp env k)
     (cases expression exp
       [lit-exp (datum) (apply-k k datum)]
       [begin-exp (bodies) 
@@ -105,7 +105,7 @@
               (looping (cdr body)))))]
       [var-exp (id)
         (apply-env env id k (lambda ()
-            (apply-env global-env id ; Eventually we want to change init-env to global-env to have a better name
+            (apply-env global-env id
               k
               (eopl:error 'apply-env ; procedure to call if id not in env
                 "variable not found in environment: ~s"
@@ -202,6 +202,8 @@
               (begin 
                 (eval-exp (car body) new-env k) 
                 (looping (cdr body))))))]
+      [cont (k)
+        (apply-k k (car args))]
       [else (error 'apply-proc
                    "Attempt to apply bad procedure: ~s" 
                     proc-value)])))

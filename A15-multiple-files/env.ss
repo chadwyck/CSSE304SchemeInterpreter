@@ -39,11 +39,11 @@
 
 ; This is the new apply-env
 (define apply-env
-  (lambda (env sym succeed fail) 
+  (trace-lambda app-env (env sym succeed fail) 
     (deref (apply-env-ref env sym succeed fail))))
 
 (define apply-env-ref 
-  (lambda (env sym succeed fail) ; succeed and fail are procedures applied if the var is or isn't found, respectively.
+  (trace-lambda app-env-ref (env sym succeed fail) ; succeed and fail are procedures applied if the var is or isn't found, respectively.
     (cases environment env
       (empty-env-record ()
         (apply-env-ref global-env sym succeed fail))  ; DERP: So this can possibly infinite loop. Also changed this to global-env
@@ -51,8 +51,8 @@
         (let ((pos (list-find-position sym syms)))
           (if (number? pos)
             (if (list? vals)
-              (succeed (list-ref vals pos))
-              (succeed vals))
+              (apply-k succeed (list-ref vals pos))
+              (apply-k succeed vals))
             (apply-env-ref env sym succeed fail)))]
       [recursively-extended-env-record
         (procnames idss bodies old-env)

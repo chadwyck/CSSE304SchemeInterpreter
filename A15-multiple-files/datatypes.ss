@@ -121,7 +121,10 @@
   [closure-improperlist
     (args improper-list?)
     (body (list-of expression?))
-    (env environment?)])
+    (env environment?)]
+  [cont
+    (k continuation?)]
+  )
 	
 (define proc-val-er?
   (lambda args
