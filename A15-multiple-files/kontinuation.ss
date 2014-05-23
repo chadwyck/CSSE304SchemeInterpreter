@@ -10,6 +10,11 @@
            (k continuation?)]
   [rands-k (proc-value scheme-value?)
           (k continuation?)]
+  [map-k (proc scheme-value?)
+          (ls list?)
+          (k continuation?)]
+  [cons-k (val scheme-value?)
+          (k continuation?)]
 )
 
 (define (apply-k k v)
@@ -25,4 +30,8 @@
                          (rands-k v k))]
     [rands-k (proc-value k)
              (apply-proc proc-value v k)]
+    [map-k (proc ls k)
+          (map-cps proc ls (cons-k v k))]
+    [cons-k (val k)
+          (apply-k k (cons val v))]
     ))

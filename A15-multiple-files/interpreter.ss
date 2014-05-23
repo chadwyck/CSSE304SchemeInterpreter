@@ -94,7 +94,7 @@
 ; eval-exp is the main component of the interpreter
 
 (define eval-exp
-  (trace-lambda wtf (exp env k)
+  (lambda (exp env k)
     (cases expression exp
       [lit-exp (datum) (apply-k k datum)]
       [begin-exp (bodies) 
@@ -167,7 +167,14 @@
 
 (define eval-rands
   (lambda (rands env k)
-    (map (lambda (x) (eval-exp x env k)) rands)))
+    (map-cps (eval-one-exp '(lambda (x kont) (eval-exp x env kont))) rands k)))
+
+(define map-cps
+  (lambda (proc-cps ls k)
+    (if (null? ls)
+  (apply-k k '())
+  (apply-proc proc-cps (list (car ls))
+      (map-k proc-cps (cdr ls) k)))))
 
 ;  Apply a procedure to its arguments.
 ;  At this point, we only have primitive procedures.  
@@ -176,7 +183,7 @@
 (define apply-proc
   (lambda (proc-value args k)
     (cases proc-val proc-value
-      [prim-proc (op) (apply-prim-proc op args)]
+      [prim-proc (op) (apply-prim-proc op args k)]
 			; You will add other cases
       [closure (ids body env)
         (let ([new-env (extend-env ids args env)])
@@ -239,9 +246,9 @@
 ; built-in procedure individually.  We are "cheating" a little bit.
 
 (define apply-prim-proc
-  (lambda (prim-proc args)
+  (trace-lambda app-prim-proc (prim-proc args k)
     (case prim-proc
-      [(+) (apply-and-check-args + args 0 >=)]
+      [(+) (apply-k k (apply-and-check-args + args 0 >=))]
       [(-) (apply-and-check-args - args 1 >=)]
       [(*) (apply-and-check-args * args 0 >=)]
       [(add1) (if (= (length args) 1) 

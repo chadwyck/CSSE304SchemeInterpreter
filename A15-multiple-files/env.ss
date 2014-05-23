@@ -39,11 +39,11 @@
 
 ; This is the new apply-env
 (define apply-env
-  (trace-lambda app-env (env sym succeed fail) 
+  (lambda (env sym succeed fail) 
     (deref (apply-env-ref env sym succeed fail))))
 
 (define apply-env-ref 
-  (trace-lambda app-env-ref (env sym succeed fail) ; succeed and fail are procedures applied if the var is or isn't found, respectively.
+  (lambda (env sym succeed fail) ; succeed and fail are procedures applied if the var is or isn't found, respectively.
     (cases environment env
       (empty-env-record ()
         (apply-env-ref global-env sym succeed fail))  ; DERP: So this can possibly infinite loop. Also changed this to global-env
