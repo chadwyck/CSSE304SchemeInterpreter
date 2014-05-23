@@ -37,28 +37,6 @@
 		 (+ 1 list-index-r)
 		 #f))))))
 
-;(define apply-env
-;  (lambda (env sym succeed fail) ; succeed and fail are procedures applied if the var is or isn't found, respectively.
-;    (cases environment env
-;      (empty-env-record ()
-;        (fail))
-;      [extended-env-record (syms vals env)
-;        (let ((pos (list-find-position sym syms)))
-;      	  (if (number? pos)
-;    	      (if (list? vals)
-;              (succeed (list-ref vals pos))
-;              (succeed vals))
-;    	      (apply-env env sym succeed fail)))]
-;      [recursively-extended-env-record
-;        (procnames idss bodies old-env)
-;        (let ([pos 
-;              (list-find-position sym procnames)])
-;          (if (number? pos)
-;              (closure (list-ref idss pos)
-;                        (list (list-ref bodies pos))
-;                        env)
-;              (apply-env old-env sym succeed fail)))])))
-
 ; This is the new apply-env
 (define apply-env
   (lambda (env sym succeed fail) 

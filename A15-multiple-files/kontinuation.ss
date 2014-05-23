@@ -1,27 +1,28 @@
-(define-datatype kontinuation kontinuation?
+(define-datatype continuation continuation?
   [init-k]
-  [flatten-cdr-k 
-   (ls list?) 
-   (k kontinuation?)]
-  [flatten-car-k 
-     (flattened-cdr list? )
-     (k kontinuation?)]
-  [append-k 
-   (first symbol?)
-   (k kontinuation?)]
+  [test-k
+    (then-exp expression?)
+    (else-exp expression?)
+    (env environment?)
+    (k continuation?)]
+  [rator-k (rands (list-of expression?))
+           (env environment?)
+           (k continuation?)]
+  [rands-k (proc-value scheme-value?)
+          (k continuation?)]
 )
 
 (define (apply-k k v)
-  (cases kontinuation k
-    [init-k ()
-        (pretty-print v)
-	(read-flatten-print)]
-    [flatten-cdr-k (ls k)
-	(if (list? (car ls))
-	    (flatten-cps (car ls) (flatten-car-k v k))
-	    (apply-k k (cons (car ls) v)))]
-    [flatten-car-k (flattened-cdr k)
-	    (append-cps v flattened-cdr k)]
-    [append-k (first k)
-	      (apply-k k  (cons first v))]
+  (cases continuation k
+    [init-k () v]
+    [test-k (then-exp else-exp env k)
+      (if v
+          (eval-exp then-exp env k)
+          (eval-exp else-exp env k))]
+    [rator-k (rands env k)
+             (eval-rands rands
+                         env
+                         (rands-k v k))]
+    [rands-k (proc-value k)
+             (apply-proc proc-value v k)]
     ))

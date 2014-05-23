@@ -5,8 +5,8 @@
     ; later we may add things that are not expressions.
     ;(display form)
     (if (eq? (car form) 'define-exp)
-      (set! global-env (extend-env (list (cadr form)) (list (eval-exp (caddr form) (empty-env))) global-env))
-      (eval-exp form global-env)
+      (set! global-env (extend-env (list (cadr form)) (list (eval-exp (caddr form) (empty-env) k)) global-env))
+      (eval-exp form global-env (init-k))
       )))
 
 
@@ -94,9 +94,9 @@
 ; eval-exp is the main component of the interpreter
 
 (define eval-exp
-  (lambda (exp env)
+  (lambda (exp env k)
     (cases expression exp
-      [lit-exp (datum) datum]
+      [lit-exp (datum) (apply-k k datum)]
       [begin-exp (bodies) 
         (let looping ([body bodies]) 
           (if (null? (cdr body)) 
@@ -104,19 +104,17 @@
             (begin (eval-exp (car body) env) 
               (looping (cdr body)))))]
       [var-exp (id)
-        (apply-env env id; look up its value.
-          (lambda (x) x) ; procedure to call if id is in the environment 
-          (lambda ()
+        (apply-env env id k (lambda ()
             (apply-env global-env id ; Eventually we want to change init-env to global-env to have a better name
-              (lambda (x) x)
+              k
               (eopl:error 'apply-env ; procedure to call if id not in env
                 "variable not found in environment: ~s"
                   id))
-           ))] 
+           ))]
       [app-exp (rator rands)
-        (let ([proc-value (eval-exp rator env)]
-              [args (eval-rands rands env)])
-          (apply-proc proc-value args))]
+               (eval-exp rator
+                         env
+                         (rator-k rands env k))]
       [let-exp (ids exprs bodies)
         (let ([new-env
                 (extend-env ids
@@ -134,9 +132,9 @@
               proc-names ids exprs env))]
 
       [if-exp (test-exp then-exp else-exp)
-        (if (eval-exp test-exp env)
-            (eval-exp then-exp env)
-            (eval-exp else-exp env))]
+        (eval-exp test-exp
+                  env
+                  (test-k then-exp else-exp env k))]
       [if-no-else-exp (test-exp then-exp)
         (if (eval-exp test-exp env)
             (eval-exp then-exp env))]
@@ -144,11 +142,11 @@
           (set! global-env (extend-env (list var) (list (eval-exp body env)) global-env))]
         ;(set! init-env (extend-env (list var) (list (eval-exp body env)) env)) ]
       [lambda-exp (args body)
-        (closure args body env)]
+        (apply-k k (closure args body env))]
       [lambda-varlist-exp (arg body)
-        (closure-list arg body env)]
+        (apply-k k (closure-list arg body env))]
       [lambda-improperlist-exp (arg body)
-        (closure-improperlist arg body env)]
+        (apply-k k (closure-improperlist arg body env))]
       [while-exp (test bodies)
         (if (eval-exp test env)
           (begin 
@@ -168,41 +166,41 @@
 ; evaluate the list of operands, putting results into a list
 
 (define eval-rands
-  (lambda (rands env)
-    (map (lambda (x) (eval-exp x env)) rands)))
+  (lambda (rands env k)
+    (map (lambda (x) (eval-exp x env k)) rands)))
 
 ;  Apply a procedure to its arguments.
 ;  At this point, we only have primitive procedures.  
 ;  User-defined procedures will be added later.
 
 (define apply-proc
-  (lambda (proc-value args)
+  (lambda (proc-value args k)
     (cases proc-val proc-value
       [prim-proc (op) (apply-prim-proc op args)]
 			; You will add other cases
       [closure (ids body env)
-        (let ([new-env (extend-env ids args env)])  ; DERP: It's not working. 
+        (let ([new-env (extend-env ids args env)])
           (let looping ((body body) (environ new-env)) 
             (if (null? (cdr body))
-              (eval-exp (car body) environ) 
+              (eval-exp (car body) environ k) 
               (begin 
-                (eval-exp (car body) environ) 
+                (eval-exp (car body) environ k) 
                 (looping (cdr body) environ)))))]
       [closure-list (ids body env)
         (let ([new-env (extend-env (list ids) (list args) env)])
           (let looping ((body body)) 
             (if (null? (cdr body))
-              (eval-exp (car body) new-env) 
+              (eval-exp (car body) new-env k) 
               (begin 
-                (eval-exp (car body) new-env) 
+                (eval-exp (car body) new-env k) 
                 (looping (cdr body))))))]
       [closure-improperlist (ids body env)
         (let ([new-env (extend-env (improperlist-to-list ids) (improperlist-helper-args ids args) env)])
           (let looping ((body body)) 
             (if (null? (cdr body))
-              (eval-exp (car body) new-env) 
+              (eval-exp (car body) new-env k) 
               (begin 
-                (eval-exp (car body) new-env) 
+                (eval-exp (car body) new-env k) 
                 (looping (cdr body))))))]
       [else (error 'apply-proc
                    "Attempt to apply bad procedure: ~s" 
