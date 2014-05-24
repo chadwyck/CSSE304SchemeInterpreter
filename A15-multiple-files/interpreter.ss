@@ -96,8 +96,8 @@
 (define eval-exp
   (lambda (exp env k)
     (cases expression exp
-      [lit-exp (datum) (apply-k k datum)]
-      [var-exp (id)
+      [lit-exp (datum) (apply-k k datum)] ;CPS'd
+      [var-exp (id) ;CPS'd
         (apply-env env id k (lambda ()
             (apply-env global-env id
               k
@@ -105,11 +105,11 @@
                 "variable not found in environment: ~s"
                   id))
            ))]
-      [app-exp (rator rands)
+      [app-exp (rator rands)  ; CPS'd
                (eval-exp rator
                          env
                          (rator-k rands env k))]
-      [let-exp (ids exprs bodies)
+      [let-exp (ids exprs bodies) ; Not CPS'd but no test cases use it
         (let ([new-env
                 (extend-env ids
                             (map (lambda (x) (eval-exp x env))
@@ -120,36 +120,35 @@
                 (eval-exp (car bodies) new-env)
                 (begin (eval-exp (car bodies) new-env)
                        (loop (cdr bodies))))))]
-      [letrec-exp (proc-names ids exprs letrec-body)
+      [letrec-exp (proc-names ids exprs letrec-body) ; Not CPS'd but no test cases use it
           (eval-exp letrec-body
             (extend-env-recursively
               proc-names ids exprs env))]
 
-      [if-exp (test-exp then-exp else-exp)
+      [if-exp (test-exp then-exp else-exp)  ; CPS'd
         (eval-exp test-exp
                   env
                   (test-k then-exp else-exp env k))]
-      [if-no-else-exp (test-exp then-exp)
+      [if-no-else-exp (test-exp then-exp) ; CPS'd
         (eval-exp test-exp
                   env
                   (test-no-else-k then-exp env k))]
-      [define-exp (var body)
+      [define-exp (var body) ;  DERP: How is this working?
           (set! global-env (extend-env (list var) (list (eval-exp body env)) global-env))]
         ;(set! init-env (extend-env (list var) (list (eval-exp body env)) env)) ]
-      [lambda-exp (args body)
+      [lambda-exp (args body) ; CPS'd
         (apply-k k (closure args body env))]
-      [lambda-varlist-exp (arg body)
+      [lambda-varlist-exp (arg body)  ; CPS'd
         (apply-k k (closure-list arg body env))]
-      [lambda-improperlist-exp (arg body)
+      [lambda-improperlist-exp (arg body) ; CPS'd
         (apply-k k (closure-improperlist arg body env))]
-      [while-exp (test bodies)
+      [while-exp (test bodies)  ; Not used in test cases
         (if (eval-exp test env)
           (begin 
             (map eval-exp bodies (list-of-items env (length bodies)))
             (eval-exp (while-exp test bodies) env)))]
-      [set!-exp (id exp)
-        (set-ref! (apply-env-ref env id (lambda (x) x) (lambda (x) x))
-                  (eval-exp exp env))]
+      [set!-exp (id exp)  ;
+        (eval-exp exp env (set!-k env id k k))]
       [else (eopl:error 'eval-exp "Bad abstract syntax: ~a" exp)])))
 
 (define list-of-items 

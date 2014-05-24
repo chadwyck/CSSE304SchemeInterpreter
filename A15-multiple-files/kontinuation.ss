@@ -23,6 +23,13 @@
     (env environment?)
     (rands (list-of expression?))
     (k continuation?)]
+  [set!-k
+    (env environment?)
+    (id symbol?)
+    (succ continuation?)
+    (fail continuation?)]
+  [set-ref!-k
+    (v scheme-value?)]
 )
 
 (define (apply-k k v)
@@ -47,4 +54,8 @@
           (apply-k k (cons val v))]
     [eval-rands-k (env rands k)
                   (eval-rands rands env (cons-k v k))]
+    [set!-k (env id succ fail)
+            (apply-env-ref env id (set-ref!-k v) (set-ref!-k v))]
+    [set-ref!-k (val) ; DERP: I have no idea why this works. And I don't know if this will work with continuations
+            (set-ref! v val)]
     ))
