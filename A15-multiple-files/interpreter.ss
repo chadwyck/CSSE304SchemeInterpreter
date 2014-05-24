@@ -29,7 +29,7 @@
     [while-exp (test bodies)
       (while-exp (syntax-expand test) (map syntax-expand bodies))]
     [begin-exp (body)
-        (begin-exp (map syntax-expand body))]
+        (app-exp (lambda-exp '() (map syntax-expand body)) '())]
     [app-exp (rator rand)
       (app-exp (syntax-expand rator) (map syntax-expand rand))]
     [let-exp (ids rands body)
@@ -97,12 +97,6 @@
   (lambda (exp env k)
     (cases expression exp
       [lit-exp (datum) (apply-k k datum)]
-      [begin-exp (bodies) 
-        (let looping ([body bodies]) 
-          (if (null? (cdr body)) 
-            (eval-exp (car body) env) 
-            (begin (eval-exp (car body) env) 
-              (looping (cdr body)))))]
       [var-exp (id)
         (apply-env env id k (lambda ()
             (apply-env global-env id
