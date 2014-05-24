@@ -301,33 +301,33 @@
       [(set-car!) (apply-k k (apply-and-check-args set-car! args 2 =))]
       [(set-cdr!) (apply-k k (apply-and-check-args set-cdr! args 2 =))]
       [(vector-set!) (apply-k k (apply-and-check-args vector-set! args 3 =))]
-      [(map) (apply-k k (apply-and-check-args our-map args 2 >=))]
+      [(map) (map-cps (deref (car args)) (cadr args) k)]
       ;[(apply) (apply-and-check-args
       ;            (lambda (proc ls . lsts)
       ;              (apply-proc proc
       ;                (flatten-apply
       ;                  (if (null? lsts) ls (cons ls lsts))))) args 2 >=)]
-      [(apply) (apply-and-check-args
-                  (lambda (proc ls . lsts)
-                    (apply-proc proc
-                      (if (null? lsts) ls (cons ls lsts)))) args 2 >=)]
-      [(caar) (apply-and-check-args caar args 1 =)]
-      [(cadr) (apply-and-check-args cadr args 1 =)]
-      [(cdar) (apply-and-check-args cdar args 1 =)]
-      [(cddr) (apply-and-check-args cddr args 1 =)]
-      [(caaar) (apply-and-check-args caaar args 1 =)]
-      [(caadr) (apply-and-check-args caadr args 1 =)]
-      [(cadar) (apply-and-check-args cadar args 1 =)]
-      [(caddr) (apply-and-check-args caddr args 1 =)]
-      [(cdaar) (apply-and-check-args cdaar args 1 =)]
-      [(cdadr) (apply-and-check-args cdadr args 1 =)]
-      [(cddar) (apply-and-check-args cddar args 1 =)]
-      [(cdddr) (apply-and-check-args cdddr args 1 =)]
+      [(apply) (apply-k k (apply-and-check-args
+                        (lambda (proc ls . lsts)
+                          (apply-proc proc
+                            (if (null? lsts) ls (cons ls lsts)))) args 2 >=))]
+      [(caar) (apply-k k (apply-and-check-args caar args 1 =))]
+      [(cadr) (apply-k k (apply-and-check-args cadr args 1 =))]
+      [(cdar) (apply-k k (apply-and-check-args cdar args 1 =))]
+      [(cddr) (apply-k k (apply-and-check-args cddr args 1 =))]
+      [(caaar) (apply-k k (apply-and-check-args caaar args 1 =))]
+      [(caadr) (apply-k k (apply-and-check-args caadr args 1 =))]
+      [(cadar) (apply-k k (apply-and-check-args cadar args 1 =))]
+      [(caddr) (apply-k k (apply-and-check-args caddr args 1 =))]
+      [(cdaar) (apply-k k (apply-and-check-args cdaar args 1 =))]
+      [(cdadr) (apply-k k (apply-and-check-args cdadr args 1 =))]
+      [(cddar) (apply-k k (apply-and-check-args cddar args 1 =))]
+      [(cdddr) (apply-k k (apply-and-check-args cdddr args 1 =))]
       [(newline) (newline)]
       [(display) (apply display args)]
       [(quotient) (quotient (1st args) (2nd args))]
-      [(append) (apply-and-check-args append args 2 >=)]
-      [(list-tail) (apply-and-check-args list-tail args 2 >=)]
+      [(append) (apply-k k (apply-and-check-args append args 2 >=))]
+      [(list-tail) (apply-k k (apply-and-check-args list-tail args 2 >=))]
       [else (error 'apply-prim-proc 
             "Bad primitive procedure name: ~s" 
             prim-proc)])))
