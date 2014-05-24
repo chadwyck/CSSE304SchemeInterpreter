@@ -40,7 +40,7 @@
                          env
                          (rands-k v k))]
     [rands-k (proc-value k)
-             (apply-proc (deref proc-value) v k)]
+             (apply-proc (if (box? proc-value) (deref proc-value) proc-value) v k)]
     [map-k (proc ls k)
           (map-cps proc ls (cons-k v k))]
     [cons-k (val k)
