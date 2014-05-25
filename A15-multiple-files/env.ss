@@ -49,7 +49,7 @@
   (lambda (env sym succeed fail) ; succeed and fail are procedures applied if the var is or isn't found, respectively.
     (cases environment env
       (empty-env-record ()
-        (apply-env-ref global-env sym succeed fail))  ; DERP: So this can possibly infinite loop. Also changed this to global-env
+        (apply-env-ref global-env sym succeed fail))
       [extended-env-record (syms vals env)
         (let ((pos (list-find-position sym syms)))
           (if (number? pos)

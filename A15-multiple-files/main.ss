@@ -1,3 +1,5 @@
+;	Team member: Mark Van Aken, Chadwick Jones, Nathan Jarvis
+
 ; evaluator for simple expressions.
 ; Possible starting point for first interpreter assignment.
 ;                  

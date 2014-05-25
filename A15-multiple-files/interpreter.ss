@@ -37,7 +37,7 @@
     [let-exp (ids rands body)
         (app-exp (syntax-expand (lambda-exp ids body)) (map syntax-expand rands))]
     [let-name-exp (name ids rands body)
-        (app-exp (letrec-exp (list name) (list ids) (map syntax-expand body) (parse-exp name)) rands)]  ; DERP: This is totes wrong
+        (app-exp (letrec-exp (list name) (list ids) (map syntax-expand body) (parse-exp name)) rands)]
     [let*-exp (ids rands body)
         (if (null? ids)
           (app-exp (lambda-exp '() (map syntax-expand body)) '())
@@ -107,11 +107,11 @@
                 "variable not found in environment: ~s"
                   id))
            ))]
-      [app-exp (rator rands)  ; CPS'd
+      [app-exp (rator rands)
                (eval-exp rator
                          env
                          (rator-k rands env k))]
-      [let-exp (ids exprs bodies) ; Not CPS'd but no test cases use it
+      [let-exp (ids exprs bodies)
         (let ([new-env
                 (extend-env ids
                             (map (lambda (x) (eval-exp x env))
@@ -122,7 +122,7 @@
                 (eval-exp (car bodies) new-env)
                 (begin (eval-exp (car bodies) new-env)
                        (loop (cdr bodies))))))]
-      [letrec-exp (proc-names ids exprs letrec-body) ; Not CPS'd but no test cases use it
+      [letrec-exp (proc-names ids exprs letrec-body)
           (eval-exp letrec-body
             (extend-env-recursively
               proc-names ids exprs env))]
@@ -135,16 +135,15 @@
         (eval-exp test-exp
                   env
                   (test-no-else-k then-exp env k))]
-      [define-exp (var body) ;  DERP: How is this working?
+      [define-exp (var body)
           (set! global-env (extend-env (list var) (list (eval-exp body env)) global-env))]
-        ;(set! init-env (extend-env (list var) (list (eval-exp body env)) env)) ]
       [lambda-exp (args body) ; CPS'd
         (apply-k k (closure args body env))]
       [lambda-varlist-exp (arg body)  ; CPS'd
         (apply-k k (closure-list arg body env))]
       [lambda-improperlist-exp (arg body) ; CPS'd
         (apply-k k (closure-improperlist arg body env))]
-      [while-exp (test bodies)  ; Not used in test cases
+      [while-exp (test bodies) 
         (if (eval-exp test env)
           (begin 
             (map eval-exp bodies (list-of-items env (length bodies)))
@@ -160,12 +159,6 @@
     (if (= n 0)
       '()
       (append (list x) (list-of-items x (- n 1))))))
-
-; evaluate the list of operands, putting results into a list
-; DERP This isn't working. Prim procs inf loop.b
-;(define eval-rands
-;  (lambda (rands env k)
-;    (map-cps (eval-one-exp '(lambda (x) (eval-exp x env k))) rands k)))
 
 (define eval-rands 
   (lambda (rands env k)
@@ -186,38 +179,40 @@
 
 (define apply-proc
   (lambda (proc-value args k)
-    (cases proc-val proc-value
-      [prim-proc (op) (apply-prim-proc op args k)]
-			; You will add other cases
-      [closure (ids body env)
-        (let ([new-env (extend-env ids args env)])
-          (let looping ((body body) (environ new-env)) 
-            (if (null? (cdr body))
-              (eval-exp (car body) environ k) 
-              (begin 
-                (eval-exp (car body) environ k) 
-                (looping (cdr body) environ)))))]
-      [closure-list (ids body env)
-        (let ([new-env (extend-env (list ids) (list args) env)])
-          (let looping ((body body)) 
-            (if (null? (cdr body))
-              (eval-exp (car body) new-env k) 
-              (begin 
-                (eval-exp (car body) new-env k) 
-                (looping (cdr body))))))]
-      [closure-improperlist (ids body env)
-        (let ([new-env (extend-env (improperlist-to-list ids) (improperlist-helper-args ids args) env)])
-          (let looping ((body body)) 
-            (if (null? (cdr body))
-              (eval-exp (car body) new-env k) 
-              (begin 
-                (eval-exp (car body) new-env k) 
-                (looping (cdr body))))))]
-      [cont (k)
-        (apply-k k (car args))]
-      [else (error 'apply-proc
-                   "Attempt to apply bad procedure: ~s" 
-                    proc-value)])))
+    (if (box? proc-value)
+        (apply-proc (deref proc-value) args k)
+        (cases proc-val proc-value
+          [prim-proc (op) (apply-prim-proc op args k)]
+          ; You will add other cases
+          [closure (ids body env)
+            (let ([new-env (extend-env ids args env)])
+              (let looping ((body body) (environ new-env)) 
+                (if (null? (cdr body))
+                  (eval-exp (car body) environ k) 
+                  (begin 
+                    (eval-exp (car body) environ k) 
+                    (looping (cdr body) environ)))))]
+          [closure-list (ids body env)
+            (let ([new-env (extend-env (list ids) (list args) env)])
+              (let looping ((body body)) 
+                (if (null? (cdr body))
+                  (eval-exp (car body) new-env k) 
+                  (begin 
+                    (eval-exp (car body) new-env k) 
+                    (looping (cdr body))))))]
+          [closure-improperlist (ids body env)
+            (let ([new-env (extend-env (improperlist-to-list ids) (improperlist-helper-args ids args) env)])
+              (let looping ((body body)) 
+                (if (null? (cdr body))
+                  (eval-exp (car body) new-env k) 
+                  (begin 
+                    (eval-exp (car body) new-env k) 
+                    (looping (cdr body))))))]
+          [cont (k)
+            (apply-k k (car args))]
+          [else (error 'apply-proc
+                       "Attempt to apply bad procedure: ~s" 
+                        proc-value)]))))
 
 (define improperlist-to-list 
   (lambda (parameters)
@@ -287,7 +282,7 @@
       [(list->vector) (apply-k k (apply-and-check-args list->vector args 1 =))]
       [(list?) (apply-k k (apply-and-check-args list? args 1 =))]
       [(pair?) (apply-k k (apply-and-check-args pair? args 1 =))]
-      [(procedure?) (if (pair? args) (apply-k k (apply-and-check-args proc-val-er? args 1 >=)) #f)]
+      [(procedure?) (if (proc-val? (car args)) #t (procedure? (car args)))]
       [(vector->list) (apply-k k (apply-and-check-args vector->list args 1 =))]
       [(vector) (apply-k k (apply-and-check-args vector args 0 >=))]
       [(make-vector) (apply-k k (apply-and-check-args make-vector args 1 =))]
@@ -298,12 +293,7 @@
       [(set-car!) (apply-k k (apply-and-check-args set-car! args 2 =))]
       [(set-cdr!) (apply-k k (apply-and-check-args set-cdr! args 2 =))]
       [(vector-set!) (apply-k k (apply-and-check-args vector-set! args 3 =))]
-      [(map) (map-cps (deref (car args)) (cadr args) k)]
-      ;[(apply) (apply-and-check-args
-      ;            (lambda (proc ls . lsts)
-      ;              (apply-proc proc
-      ;                (flatten-apply
-      ;                  (if (null? lsts) ls (cons ls lsts))))) args 2 >=)]
+      [(map) (map-cps (if (box? (car args)) (deref (car args)) (car args)) (cadr args) k)]
       [(apply) (apply-k k (apply-and-check-args
                         (lambda (proc ls . lsts)
                           (apply-proc proc
@@ -366,7 +356,9 @@
 (define apply-and-check-args 
   (lambda (proc args num check) 
     (if (check-arg-count args num check) 
-      (apply proc args) 
+      (apply proc (if (box? args)
+                      (deref args)
+                      args)) 
       (error 'apply-built-in-proc 
         "Wrong number of arguments for proc: ~s Needs ~s ~s Received ~s"
          proc check num (length args)))))
@@ -376,7 +368,6 @@
     (display "--> ")
     ;; notice that we don't save changes to the environment...
     (let ([answer (top-level-eval (syntax-expand (parse-exp (read))))])
-      ;; TODO: are there answers that should display differently?
       (eopl:pretty-print answer) (newline)
       (rep))))  ; tail-recursive, so stack doesn't grow.
 

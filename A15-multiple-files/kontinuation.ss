@@ -49,7 +49,7 @@
                          env
                          (rands-k v k))]
     [rands-k (proc-value k)
-             (apply-proc (if (box? proc-value) (deref proc-value) proc-value) v k)]
+             (apply-proc (if (box? proc-value) (deref proc-value) proc-value) (map (lambda (x) (if (box? x) (deref x) x)) v) k)]
     [map-k (proc ls k)
           (map-cps proc ls (cons-k v k))]
     [cons-k (val k)
@@ -61,11 +61,18 @@
     [set-ref!-k (val) ; DERP: I have no idea why this works. And I don't know if this will work with continuations
             (set-ref! v val)]
     [call/cc-k (next-k)
-      (if (proc-val? v)
+      (if (box? v)
+        (cases proc-val (deref v)
+          [closure (id body env)
+            (eval-exp (car body) (extend-env id (list (cont next-k)) env) next-k)]
+          [prim-proc (op) (apply-prim-proc op proc-val next-k)]
+          [cont (k)
+            (apply-k k (car proc-val))]
+          [else
+            (eopl:error 'apply-k "call/cc did not receive a proper procedure ~s" (deref v))])
         (cases proc-val v
           [closure (id body env)
             (eval-exp (car body) (extend-env id (list (cont next-k)) env) next-k)]
           [else
-            (eopl:error 'apply-k "call/cc did not receive a proper procedure ~s" v)])
-        (apply-k k (unbox v)))]
+            (eopl:error 'apply-k "call/cc did not receive a proper procedure ~s" v)]))]
     ))
