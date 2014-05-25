@@ -30,6 +30,8 @@
     (fail continuation?)]
   [set-ref!-k
     (v scheme-value?)]
+  [call/cc-k
+    (next-cont continuation?)]
 )
 
 (define (apply-k k v)
@@ -58,4 +60,12 @@
             (apply-env-ref env id (set-ref!-k v) (set-ref!-k v))]
     [set-ref!-k (val) ; DERP: I have no idea why this works. And I don't know if this will work with continuations
             (set-ref! v val)]
+    [call/cc-k (next-k)
+      (if (proc-val? v)
+        (cases proc-val v
+          [closure (id body env)
+            (eval-exp (car body) (extend-env id (list (cont next-k)) env) next-k)]
+          [else
+            (eopl:error 'apply-k "call/cc did not receive a proper procedure ~s" v)])
+        (apply-k k (unbox v)))]
     ))

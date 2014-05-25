@@ -14,6 +14,7 @@
 (define improper-list?
   (lambda (x)
     (and (not (list? x)) (pair? x))))
+
 (define-datatype expression expression?
   [var-exp        ; variable references
    (id symbol?)]
@@ -82,6 +83,8 @@
     (bodies (list-of expression?))]
   [begin-exp
     (bodies (list-of expression?))]
+  [call/cc-exp
+    (rec expression?)]
 )
 
 ;; environment type definitions
@@ -113,7 +116,7 @@
   [closure
     (args (list-of symbol?))
     (body (list-of expression?))
-    (env environment?)]
+    (env scheme-value?)]
   [closure-list
     (args symbol?)
     (body (list-of expression?))

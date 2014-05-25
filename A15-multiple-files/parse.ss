@@ -146,6 +146,8 @@
                 (while-exp (parse-exp (cadr datum)) (map parse-exp (cddr datum)))]
               [(eqv? (car datum) 'begin)
                 (begin-exp (map parse-exp (cdr datum)))]
+              [(eqv? (car datum) 'call/cc) 
+                (call/cc-exp (parse-exp (cadr datum)))]
               ;[(lit-exp? datum) (lit-exp datum)]
               [else
                 (app-exp (parse-exp (car datum)) (map parse-exp (cdr datum)))])]

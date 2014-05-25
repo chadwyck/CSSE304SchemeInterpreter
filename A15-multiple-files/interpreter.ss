@@ -16,6 +16,8 @@
   (cases expression exp
     [var-exp (id) exp]
     [lit-exp (val) exp]
+    [call/cc-exp (rec)
+      (call/cc-exp (syntax-expand rec))]
     [if-exp (test-exp true-exp false-exp)
       (if-exp (syntax-expand test-exp) (syntax-expand true-exp) (syntax-expand false-exp))]
     [if-no-else-exp (test-exp true-exp)
@@ -149,6 +151,8 @@
             (eval-exp (while-exp test bodies) env)))]
       [set!-exp (id exp)  ;
         (eval-exp exp env (set!-k env id k k))]
+      [call/cc-exp (rec) 
+        (eval-exp rec env (call/cc-k k))]
       [else (eopl:error 'eval-exp "Bad abstract syntax: ~a" exp)])))
 
 (define list-of-items 
@@ -230,7 +234,7 @@
         car cdr list null? assq eq? eqv? equal? atom? length list-vector list? 
         pair? procedure? vector->list list->vector vector make-vector vector-ref vector? number? 
         symbol? set-car! set-cdr! vector-set! display newline map apply caar cadr cdar 
-        cddr caaar caadr cadar caddr cdaar cdadr cddar cdddr quotient append list-tail))
+        cddr caaar caadr cadar caddr cdaar cdadr cddar cdddr quotient append list-tail exit))
 
 (define init-env         ; for now, our initial global environment only contains 
   (extend-env            ; procedure names.  Recall that an environment associates
@@ -321,6 +325,7 @@
       [(quotient) (quotient (1st args) (2nd args))]
       [(append) (apply-k k (apply-and-check-args append args 2 >=))]
       [(list-tail) (apply-k k (apply-and-check-args list-tail args 2 >=))]
+      [(exit) (apply-k (init-k) args)]
       [else (error 'apply-prim-proc 
             "Bad primitive procedure name: ~s" 
             prim-proc)])))
